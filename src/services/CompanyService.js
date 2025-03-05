@@ -1,4 +1,4 @@
-const { default: mongoose } = require("mongoose");
+const mongoose = require("mongoose");
 const ApiError = require("../errors/ApiErrors");
 const Company = require("../models/Company.model");
 const UserModel = require("../models/User.model");
@@ -9,6 +9,7 @@ const {
   generateStrongPassword,
   hashPassword,
 } = require("../utils/password.util");
+const RoleModel = require("../models/Role.model");
 
 class CompanyService {
   static async addCompany(data) {
@@ -28,13 +29,17 @@ class CompanyService {
       const generatedPassword = await generateStrongPassword();
       console.log(generatedPassword); //TODO: REMOVE THIS
       const hashedPassword = await hashPassword(generatedPassword);
+      const roleId = await RoleModel.findOne({ roleId: "R1001" }); //Look at Role Model it's hardcoded
 
       // Create user
       const user = new UserModel({
         email,
         type: userType.RSVC,
         password: hashedPassword,
+        isActive: true,
+        roleId,
       });
+
       await user.save({ session });
 
       const company = new Company({ ...data, userId: user._id });
@@ -42,12 +47,12 @@ class CompanyService {
 
       await session.commitTransaction(); // Commit if everything is successful
 
-      //send password
-      try {
-        await sendPasswordMail(email, generatedPassword);
-      } catch (mailError) {
-        console.error("Failed to send password email:", mailError);
-      }
+      // send password
+      // try {
+      //   await sendPasswordMail(email, generatedPassword);
+      // } catch (mailError) {
+      //   console.error("Failed to send password email:", mailError);
+      // }
 
       return company;
     } catch (error) {

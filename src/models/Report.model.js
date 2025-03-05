@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const crypto = require("crypto");
 
 const ReportSchema = new mongoose.Schema(
   {
@@ -13,7 +14,7 @@ const ReportSchema = new mongoose.Schema(
 
     alert_notifications: { type: String, required: true },
     farmerId: { type: mongoose.Schema.ObjectId, ref: "Farmer", required: true },
-    //change this to requestId
+    requestId: { type: String },
   },
   { timestamps: true }
 );

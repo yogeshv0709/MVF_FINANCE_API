@@ -18,7 +18,7 @@ router.post(
   "/addEnquiry",
   authMiddleware,
   isCompany,
-  validate(FarmerCropSchema),
+  // validate(FarmerCropSchema),
   addFarmerCrop
 );
 

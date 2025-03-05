@@ -4,31 +4,6 @@ const Report = require("../models/Report.model");
 const { userType } = require("../utils/constant");
 
 class ReportService {
-  // Create a new report
-  // static async createReport(userId, data, files) {
-  //   const { descriptions, alertOrAdvisory, farmerId } = data;
-
-  //   const formattedDescriptions = descriptions.map((desc, index) => ({
-  //     text: desc.text,
-  //     fileUrl: desc.fileUrl, // Already set in middleware
-  //   }));
-
-  //   const report = new Report({
-  //     descriptions: formattedDescriptions,
-  //     farmerId,
-  //     submittedBy: userId,
-  //     alertOrAdvisory,
-  //     weatherForecastFile: files["weatherForecastFile"]
-  //       ? files["weatherForecastFile"][0].path
-  //       : null,
-  //     otherReportFile: files["otherReportFile"]
-  //       ? files["otherReportFile"][0].path
-  //       : null,
-  //   });
-
-  //   await report.save();
-  //   return report;
-  // }
   static async createReport(data, files) {
     const { descriptions, farmerId, alert_notifications } = data;
     if (!farmerId) {
@@ -43,6 +18,7 @@ class ReportService {
 
     // Create new report entry
     const report = new Report({
+      requestId: crypto.randomUUID(),
       images: formattedImages,
       farmerId,
       alert_notifications,

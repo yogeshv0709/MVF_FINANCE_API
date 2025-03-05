@@ -12,7 +12,6 @@ const router = express.Router();
 const authController = new AuthController();
 
 router.route("/login").post(validate(LoginSchema), authController.login);
-router.route("/register").post(authController.register);
 router.route("/refresh").post(authController.refresh);
 router.route("/staffDetail").get(authMiddleware, authController.staffDetail);
 

@@ -22,37 +22,10 @@ class AuthController {
     this.authservice = new AuthService(UserModel);
   }
 
-  register = asyncHandler(async (req, res) => {
-    const { email, type } = req.body;
-
-    if (!types.includes(type)) {
-      throw new ApiError(400, "Invalid role");
-    }
-
-    const { accessToken, refreshToken, user } = await this.authservice.register(
-      email,
-      type
-    );
-
-    this.setTokenCookie(res, "accessToken", accessToken, jwtConfig.expiresIn);
-    this.setTokenCookie(
-      res,
-      "refreshToken",
-      refreshToken,
-      jwtConfig.refreshExpiresIn
-    );
-
-    res
-      .status(201)
-      .json(new ApiResponse(200, { user }, "Registration Successful"));
-  });
-
   login = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
-    const { user, accessToken, refreshToken } = await this.authservice.login(
-      email,
-      password
-    );
+    const { userId, roleId, accessToken, refreshToken } =
+      await this.authservice.login(email, password);
 
     this.setTokenCookie(res, "accessToken", accessToken, jwtConfig.expiresIn);
     this.setTokenCookie(
@@ -62,7 +35,13 @@ class AuthController {
       jwtConfig.refreshExpiresIn
     );
 
-    res.status(200).json(new ApiResponse(200, user, "Login Successful"));
+    res.status(200).json(
+      new ApiResponse(200, {
+        userId,
+        message: "User Verified",
+        permission: { roleId },
+      })
+    );
   });
 
   staffDetail = asyncHandler(async (req, res) => {

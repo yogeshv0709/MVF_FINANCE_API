@@ -1,4 +1,8 @@
 const mongoose = require("mongoose");
+const UserModel = require("./User.model");
+const crypto = require("crypto");
+const CounterModel = require("./Counter.model");
+const CompanyModel = require("./Company.model");
 
 const FarmerCropSchema = new mongoose.Schema(
   {
@@ -21,15 +25,48 @@ const FarmerCropSchema = new mongoose.Schema(
 
     fieldName: { type: String, required: true },
     area: { type: Number, required: true }, // Acres
-    filedLatitude: { type: Number },
-    fieldLongitude: { type: Number },
-    fieldWktData: { type: String, required: true },
+    Latitude: { type: Number },
+    Longitude: { type: Number },
+    wkt: { type: String, required: true },
 
-    userId: { type: mongoose.Types.ObjectId, require: true, ref: "Company" },
-    //add unique requestID
-    //add unique fieldId
+    originalUserId: {
+      type: mongoose.Types.ObjectId,
+      require: true,
+      ref: "Company",
+    },
+    userId: { type: String },
+    requestId: { type: String },
+    fieldId: { type: String },
+    //!TODO: ask for type and enquiryType
   },
   { timestamps: true }
 );
+
+FarmerCropSchema.pre("save", async function (next) {
+  // Fetch the staffId from the User model before saving
+  try {
+    if (!this.requestId) {
+      this.requestId = crypto.randomUUID(); // Generate unique requestId
+    }
+    if (!this.fieldId) {
+      const counter = await CounterModel.findOneAndUpdate(
+        { name: "fieldId" },
+        { $inc: { value: 1 } },
+        { new: true, upsert: true }
+      );
+      this.fieldId = `FIELD_${1000 + counter.value}`;
+    }
+    const company = await CompanyModel.findById(this.originalUserId);
+    if (company && company.frenchiseId) {
+      this.userId = company.frenchiseId; // Store `staffId` instead of ObjectId
+    } else {
+      return next(new Error("Invalid userId: No staffId found."));
+    }
+  } catch (error) {
+    return next(error);
+  }
+
+  next();
+});
 
 module.exports = mongoose.model("Farmer", FarmerCropSchema);

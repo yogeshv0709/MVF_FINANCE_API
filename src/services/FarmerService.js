@@ -1,4 +1,5 @@
 const ApiError = require("../errors/ApiErrors");
+const CompanyModel = require("../models/Company.model");
 const Farmer = require("../models/FarmerCrop.model");
 const { checkCompanyAccess } = require("../utils/authHelper");
 const { userType } = require("../utils/constant");
@@ -6,10 +7,14 @@ const { userType } = require("../utils/constant");
 class FarmerCropService {
   // Create a new Farmer Crop entry
   static async addFarmerCrop(userId, data) {
+    const company = await CompanyModel.findOne({ userId });
+    if (!company) {
+      throw new ApiError(400, "No company found related Farmer");
+    }
+    data.originalUserId = company._id;
     const result = await Farmer.create(data);
-    result.userId = userId;
-    result.save();
-    return result;
+    const { originalUserId: _, ...rest } = result.toObject();
+    return rest;
   }
 
   // Get all Farmer Crop entries with pagination

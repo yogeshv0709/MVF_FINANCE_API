@@ -1,13 +1,11 @@
 const jwt = require("jsonwebtoken");
 const jwtConfig = require("../config/jwt.config");
 const ApiError = require("../errors/ApiErrors");
-const {
-  comparePassword,
-  generateStrongPassword,
-  hashPassword,
-} = require("../utils/password.util");
+const { comparePassword, hashPassword } = require("../utils/password.util");
 const CompanyModel = require("../models/Company.model");
 const { userType } = require("../utils/constant");
+const RoleModel = require("../models/Role.model");
+require("../models/Permission.model");
 
 class AuthService {
   constructor(userModel) {
@@ -31,28 +29,6 @@ class AuthService {
 
     return { accessToken, refreshToken };
   }
-  //!not used yet
-  async register(email, type) {
-    const existingUser = await this.userModel.findOne({ email });
-    if (existingUser) {
-      throw new ApiError(400, "Email already used");
-    }
-    const generatedPassword = await generateStrongPassword();
-    console.log(generatedPassword);
-    const hashedPassword = await hashPassword(generatedPassword);
-
-    const user = new this.userModel({
-      email,
-      type,
-      password: hashedPassword,
-    });
-
-    const { accessToken, refreshToken } = this.generateTokens(user);
-    user.refreshToken = refreshToken;
-    await user.save();
-
-    return { accessToken, refreshToken, user: user.email };
-  }
 
   async login(email, password) {
     const user = await this.userModel.findOne({ email });
@@ -66,11 +42,49 @@ class AuthService {
     }
 
     const { accessToken, refreshToken } = this.generateTokens(user);
-    user.refreshToken = refreshToken;
+    user.token = refreshToken;
     await user.save();
 
-    const { password: _, ...rest } = user.toObject();
-    return { accessToken, refreshToken, user: rest };
+    let name;
+    if (user.type === userType.Admin) {
+      name = "Admin";
+    } else if (user.type === userType.RSVC) {
+      name = "Franchise";
+    } else {
+      throw new ApiError(403, "Unauthorized");
+    }
+
+    if (user.type === userType.RSVC) {
+      const company = await CompanyModel.findOne({ userId: user._id });
+      if (company) {
+        const staffId = company.frenchiseId;
+        const blocked = company.blocked;
+        const contact = company.contact;
+        const roleId = await RoleModel.findOne({ name }).populate(
+          "isPermission"
+        );
+        const { password: _, ...rest } = user.toObject();
+        const updatedRest = { ...rest, staffId, blocked, contact };
+
+        return {
+          accessToken,
+          refreshToken,
+          userId: updatedRest,
+          roleId,
+        };
+      }
+    } else if (user.type === userType.Admin) {
+      const roleId = await RoleModel.findOne({ name }).populate("isPermission");
+      const { password: _, ...rest } = user.toObject();
+      return {
+        accessToken,
+        refreshToken,
+        userId: rest,
+        roleId,
+      };
+    } else {
+      throw new ApiError(403, "Unauthorized");
+    }
   }
 
   async getAuthDetails(user) {

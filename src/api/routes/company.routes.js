@@ -11,7 +11,7 @@ router.post(
   "/addFranchise",
   authMiddleware,
   isAdmin,
-  validate(companySchema.createCompanySchema),
+  // validate(companySchema.createCompanySchema),
   CompanyController.addCompany
 );
 
