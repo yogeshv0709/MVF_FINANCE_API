@@ -69,7 +69,7 @@ const FarmerCropSchema = z
       .min(-180, "Invalid longitude")
       .max(180, "Invalid longitude")
       .optional(),
-    wktData: z.string().min(1, "WKT data is required").max(10000),
+    wkt: z.string().min(1, "WKT data is required").max(10000),
   })
   .strict();
 

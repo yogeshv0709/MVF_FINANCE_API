@@ -1,4 +1,5 @@
 const ApiError = require("../errors/ApiErrors");
+const CompanyModel = require("../models/Company.model");
 const Company = require("../models/Company.model");
 const Farmer = require("../models/FarmerCrop.model");
 
@@ -52,15 +53,22 @@ class DashboardService {
         month: monthlyFarmers,
         total: farmerCount,
       },
+      user: {
+        total: 0,
+      },
     };
   }
 
   static async getCompanyDashboardStats(userId, type) {
     if (type === "RSVC") {
-      const farmerCount = await Farmer.countDocuments({ userId });
-
+      //check this also
+      const company = await CompanyModel.findOne({ userId });
+      const farmerCount = await Farmer.countDocuments({
+        companyId: company._id,
+      });
+      const companyId = company._id;
       const farmersByMonth = await Farmer.aggregate([
-        { $match: userId },
+        { $match: { companyId: company._id } },
         {
           $group: {
             _id: { $month: "$createdAt" },
@@ -78,6 +86,9 @@ class DashboardService {
         enquiry: {
           month: monthlyFarmers,
           total: farmerCount,
+        },
+        user: {
+          total: 0,
         },
       };
     } else {

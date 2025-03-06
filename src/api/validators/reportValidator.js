@@ -18,8 +18,7 @@ const reportSchema = z
     weatherForecastFile: z.string().optional(),
     otherReportFile: z.string().optional(),
     alert_notifications: z.string().optional(),
-    farmerId: objectIdSchema,
-    farmerId: objectIdSchema,
+    requestId: z.string().uuid(),
   })
   .strict();
 

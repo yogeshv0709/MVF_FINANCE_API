@@ -1,13 +1,15 @@
 const ApiError = require("../errors/ApiErrors");
+const CompanyModel = require("../models/Company.model");
 const FarmerCropModel = require("../models/FarmerCrop.model");
 const Report = require("../models/Report.model");
 const { userType } = require("../utils/constant");
 
 class ReportService {
   static async createReport(data, files) {
-    const { descriptions, farmerId, alert_notifications } = data;
-    if (!farmerId) {
-      throw new Error("Farmer ID is required.");
+    const { descriptions, alert_notifications, requestId } = data;
+    const farmer = await FarmerCropModel.findOne({ requestId });
+    if (!farmer) {
+      throw new Error("Invalid requestId.");
     }
 
     // Map descriptions into the required format
@@ -18,9 +20,9 @@ class ReportService {
 
     // Create new report entry
     const report = new Report({
-      requestId: crypto.randomUUID(),
+      requestId: requestId,
       images: formattedImages,
-      farmerId,
+      farmerId: farmer._id,
       alert_notifications,
       weatherReport: files["weatherForecastFile"]
         ? files["weatherForecastFile"][0].path
@@ -33,6 +35,7 @@ class ReportService {
     await report.save();
     return report;
   }
+
   // Get paginated reports
   static async getAllReports(user, page = 1, limit = 10) {
     const userId = user.userId;
@@ -42,33 +45,48 @@ class ReportService {
 
     let reports, totalReports;
     if (userRole === userType.Admin) {
+      // totalReports = await Report.countDocuments();
+      // reports = await Report.find()
+      //   .skip(skip)
+      //   .limit(limit)
+      //   .populate("farmerId", "farmerName contactNumber email");
+
       totalReports = await Report.countDocuments();
-      reports = await Report.find()
-        .skip(skip)
-        .limit(limit)
-        .populate("farmerId submittedBy", "farmerName contactNumber email");
+      reports = await Report.find().populate(
+        "farmerId",
+        "farmerName contactNumber email"
+      );
     } else if (userRole === userType.RSVC) {
-      const farmers = await FarmerCropModel.find({ userId }).select("_id");
+      const company = await CompanyModel.findOne({ userId });
+
+      const farmers = await FarmerCropModel.find({
+        companyId: company._id,
+      }).select("_id");
       const farmerIds = farmers.map((farmer) => farmer._id);
 
       totalReports = await Report.countDocuments({
         farmerId: { $in: farmerIds },
       });
 
-      reports = await Report.find({ farmerId: { $in: farmerIds } })
-        .skip(skip)
-        .limit(limit)
-        .populate("farmerId submittedBy", "farmerName contactNumber email");
+      // reports = await Report.find({ farmerId: { $in: farmerIds } })
+      //   .skip(skip)
+      //   .limit(limit)
+      //   .populate("farmerId submittedBy", "farmerName contactNumber email");
+      reports = await Report.find({ farmerId: { $in: farmerIds } }).populate(
+        "farmerId submittedBy",
+        "farmerName contactNumber email"
+      );
     } else {
       throw new ApiError(403, "Access denied");
     }
 
-    return {
-      reports,
-      currentPage: page,
-      totalPages: Math.ceil(totalReports / limit),
-      totalReports,
-    };
+    // return {
+    //   reports,
+    //   currentPage: page,
+    //   totalPages: Math.ceil(totalReports / limit),
+    //   totalReports,
+    // };
+    return reports;
   }
 
   static async getAllFarmerReports(user, farmerId, page, limit) {

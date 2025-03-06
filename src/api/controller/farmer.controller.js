@@ -11,11 +11,16 @@ const addFarmerCrop = asyncHandler(async (req, res) => {
 
 const getFarmerCrops = asyncHandler(async (req, res) => {
   let { page, limit } = req.query;
+  const data = req.body;
   const user = req.user;
   page = parseInt(page) || 1;
   limit = parseInt(limit) || 10;
-
-  const result = await FarmerCropService.getFarmerCrops(user, page, limit);
+  const result = await FarmerCropService.getFarmerCrops(
+    user,
+    data,
+    page,
+    limit
+  );
   res.status(200).json(new ApiResponse(200, result));
 });
 

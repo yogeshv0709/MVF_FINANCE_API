@@ -29,15 +29,15 @@ const FarmerCropSchema = new mongoose.Schema(
     Longitude: { type: Number },
     wkt: { type: String, required: true },
 
-    originalUserId: {
+    companyId: {
       type: mongoose.Types.ObjectId,
       require: true,
       ref: "Company",
     },
     userId: { type: String },
-    requestId: { type: String },
-    fieldId: { type: String },
-    //!TODO: ask for type and enquiryType
+    requestId: { type: String, unique: true },
+    fieldId: { type: String, unique: true },
+    //!TODO: ask for type and enquiryType type hardcore and enquiryType bank
   },
   { timestamps: true }
 );
@@ -56,7 +56,7 @@ FarmerCropSchema.pre("save", async function (next) {
       );
       this.fieldId = `FIELD_${1000 + counter.value}`;
     }
-    const company = await CompanyModel.findById(this.originalUserId);
+    const company = await CompanyModel.findById(this.companyId);
     if (company && company.frenchiseId) {
       this.userId = company.frenchiseId; // Store `staffId` instead of ObjectId
     } else {

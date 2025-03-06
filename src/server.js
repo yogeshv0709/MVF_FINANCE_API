@@ -24,8 +24,8 @@ server.use("/uploads", express.static("uploads"));
 server.use("/api/v1", authRoute);
 server.use("/api/v1", dashboardRoute);
 server.use("/api/v1", companyRoute);
-server.use("/api/v1/farmer", farmerRoute);
-server.use("/api/v1/report", reportRoute);
+server.use("/api/v1", farmerRoute);
+server.use("/api/v1", reportRoute);
 
 server.use(notFound);
 server.use(errorHandler);

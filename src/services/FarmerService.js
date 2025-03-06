@@ -11,17 +11,19 @@ class FarmerCropService {
     if (!company) {
       throw new ApiError(400, "No company found related Farmer");
     }
-    data.originalUserId = company._id;
-    const result = await Farmer.create(data);
-    const { originalUserId: _, ...rest } = result.toObject();
+    data.companyId = company._id;
+    const farmer = new Farmer(data);
+    const result = await farmer.save();
+    const { companyId: _, ...rest } = result.toObject();
     return rest;
   }
 
   // Get all Farmer Crop entries with pagination
-  static async getFarmerCrops(user, page = 1, limit = 10) {
+  static async getFarmerCrops(user, data, page = 1, limit = 10) {
+    console.log("in");
     const userId = user.userId;
     const userRole = user.type;
-
+    console.log(user);
     let farmerCrops;
     let totalFarmerCrops;
     const skip = (page - 1) * limit;
@@ -29,18 +31,26 @@ class FarmerCropService {
       farmerCrops = await Farmer.find().skip(skip).limit(limit);
       totalFarmerCrops = await Farmer.countDocuments();
     } else if (userRole === userType.RSVC) {
-      farmerCrops = await Farmer.find({ userId }).skip(skip).limit(limit);
-      totalFarmerCrops = await Farmer.countDocuments({ userId });
+      if (data.entype === "bank") {
+        const company = await CompanyModel.findOne({ userId });
+        farmerCrops = await Farmer.find({ companyId: company._id })
+          .skip(skip)
+          .limit(limit);
+        totalFarmerCrops = await Farmer.countDocuments({
+          companyId: company._id,
+        });
+      }
     } else {
       throw new ApiError(403, "Access Denied");
     }
 
-    return {
-      farmerCrops,
-      currentPage: page,
-      totalPages: Math.ceil(totalFarmerCrops / limit),
-      totalFarmerCrops,
-    };
+    // return {
+    //   farmerCrops,
+    //   currentPage: page,
+    //   totalPages: Math.ceil(totalFarmerCrops / limit),
+    //   totalFarmerCrops,
+    // };
+    return farmerCrops;
   }
 
   static async getFarmerCropById(farmerId) {

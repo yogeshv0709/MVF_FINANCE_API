@@ -42,7 +42,7 @@ class AuthService {
     }
 
     const { accessToken, refreshToken } = this.generateTokens(user);
-    user.token = refreshToken;
+    user.token = accessToken;
     await user.save();
 
     let name;
@@ -75,7 +75,7 @@ class AuthService {
       }
     } else if (user.type === userType.Admin) {
       const roleId = await RoleModel.findOne({ name }).populate("isPermission");
-      const { password: _, ...rest } = user.toObject();
+      const { password: _, token: hideIt, ...rest } = user.toObject();
       return {
         accessToken,
         refreshToken,
@@ -105,23 +105,23 @@ class AuthService {
     return response;
   }
 
-  async refreshToken(token) {
-    const decoded = jwt.verify(token, jwtConfig.secret);
-    const user = await this.userModel.findOne({
-      _id: decoded.userId,
-      refreshToken: token,
-    });
-    if (!user) throw new Error("Invalid refresh token");
+  // async refreshToken(token) {
+  //   const decoded = jwt.verify(token, jwtConfig.secret);
+  //   const user = await this.userModel.findOne({
+  //     _id: decoded.userId,
+  //     refreshToken: token,
+  //   });
+  //   if (!user) throw new Error("Invalid refresh token");
 
-    if (!user || user.refreshToken !== token) {
-      throw new ApiError(401, "Invalid refresh token");
-    }
+  //   if (!user || user.refreshToken !== token) {
+  //     throw new ApiError(401, "Invalid refresh token");
+  //   }
 
-    const { accessToken, refreshToken } = this.generateTokens(user);
-    user.refreshToken = refreshToken;
-    await user.save();
-    return { accessToken, refreshToken };
-  }
+  //   const { accessToken, refreshToken } = this.generateTokens(user);
+  //   user.refreshToken = refreshToken;
+  //   await user.save();
+  //   return { accessToken, refreshToken };
+  // }
 
   async changePassword(userId, oldPassword, newPassword) {
     const user = await this.userModel.findById(userId);
@@ -145,12 +145,12 @@ class AuthService {
     return "Password changed successfully";
   }
 
-  async logout(userId) {
-    await this.userModel.updateOne(
-      { _id: userId },
-      { $unset: { refreshToken: 1 } }
-    );
-  }
+  // async logout(userId) {
+  //   await this.userModel.updateOne(
+  //     { _id: userId },
+  //     { $unset: { refreshToken: 1 } }
+  //   );
+  // }
 }
 
 module.exports = AuthService;

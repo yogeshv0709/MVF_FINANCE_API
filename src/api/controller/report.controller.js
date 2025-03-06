@@ -5,7 +5,7 @@ const { asyncHandler } = require("../../utils/asyncHandler");
 // Create a new report
 const submitReport = asyncHandler(async (req, res) => {
   const report = await ReportService.createReport(req.body, req.files);
-  res.status(201).json(new ApiResponse(201, { report }));
+  res.status(201).json(new ApiResponse(201, report));
 });
 
 // Get all reports (with pagination)

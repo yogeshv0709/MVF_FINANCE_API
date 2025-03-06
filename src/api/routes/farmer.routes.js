@@ -22,9 +22,9 @@ router.post(
   addFarmerCrop
 );
 
-// @access admin=>all company=> company's farmer
-router.get("/getEnquiry", authMiddleware, getFarmerCrops);
+// @access admin=>all company=> company's farmer {entype:"user"} "bank"
+router.post("/getEnquiry", authMiddleware, getFarmerCrops);
 
-router.get("/:farmerId", validate(objectIdSchema, "params"), getFarmerCropById);
+// router.get("/:farmerId", validate(objectIdSchema, "params"), getFarmerCropById);
 
 module.exports = router;

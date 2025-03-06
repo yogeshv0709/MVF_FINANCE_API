@@ -30,7 +30,6 @@ class CompanyService {
       console.log(generatedPassword); //TODO: REMOVE THIS
       const hashedPassword = await hashPassword(generatedPassword);
       const roleId = await RoleModel.findOne({ roleId: "R1001" }); //Look at Role Model it's hardcoded
-
       // Create user
       const user = new UserModel({
         email,
@@ -39,14 +38,12 @@ class CompanyService {
         isActive: true,
         roleId,
       });
-
       await user.save({ session });
 
       const company = new Company({ ...data, userId: user._id });
       await company.save({ session });
 
       await session.commitTransaction(); // Commit if everything is successful
-
       // send password
       // try {
       //   await sendPasswordMail(email, generatedPassword);
@@ -69,38 +66,37 @@ class CompanyService {
     const companies = await Company.find().skip(skip).limit(limit);
     const totalCompanies = await Company.countDocuments();
 
-    return {
-      companies,
-      currentPage: page,
-      totalPages: Math.ceil(totalCompanies / limit),
-      totalCompanies,
-    };
+    // return {
+    //   companies,
+    //   currentPage: page,
+    //   totalPages: Math.ceil(totalCompanies / limit),
+    //   totalCompanies,
+    // };
+    return companies;
   }
 
-  static async updateCompany(companyId, updates) {
-    const company = await Company.findById(companyId);
+  static async getCompany(frenchiseId) {
+    const company = await Company.findOne({ frenchiseId });
     if (!company) {
-      throw new Error("Company not found");
+      throw new ApiError(404, "Company not found");
     }
-
-    Object.keys(updates).forEach((key) => {
-      company[key] = updates[key];
-    });
-
-    await company.save();
     return company;
   }
 
-  static async getCompanyById(user, companyId) {
-    const company = await Company.findById(companyId);
-    if (!checkCompanyAccess(user, company)) {
-      throw new ApiError(403, "Unauthorized access");
-    }
+  static async updateCompany(updates) {
+    const company = await Company.findOne({ frenchiseId: updates.frenchiseId });
     if (!company) {
       throw new ApiError(404, "Company not found");
     }
 
-    return company;
+    // Update the found company
+    const updatedCompany = await Company.findByIdAndUpdate(
+      company._id, // Use the actual ObjectId
+      updates,
+      { new: true, runValidators: true }
+    );
+
+    return updatedCompany;
   }
 }
 

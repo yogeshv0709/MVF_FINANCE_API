@@ -12,8 +12,10 @@ const router = express.Router();
 const authController = new AuthController();
 
 router.route("/login").post(validate(LoginSchema), authController.login);
-router.route("/refresh").post(authController.refresh);
-router.route("/staffDetail").get(authMiddleware, authController.staffDetail);
+// router.route("/refresh").post(authController.refresh);
+
+//! @get
+router.route("/staffDetail").post(authMiddleware, authController.staffDetail);
 
 router
   .route("/change-password")
@@ -22,6 +24,7 @@ router
     validate(changePasswordSchema),
     authController.changePassword
   );
-router.route("/logout").get(authMiddleware, authController.logout);
+
+// router.route("/logout").get(authMiddleware, authController.logout);
 
 module.exports = router;

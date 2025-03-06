@@ -15,21 +15,28 @@ router.post(
   CompanyController.addCompany
 );
 
-router.get(
-  "/getAllFranchise",
+router.post(
+  "/getAllFrencise",
   authMiddleware,
   isAdmin,
   CompanyController.getCompanies
 );
 
-router.patch(
-  "/:companyId",
+// @getFrenciseById=>frenchiseId=>post ask to sir this should be patch post work just pass it proper
+router.post(
+  "/getFrenciseById",
   authMiddleware,
   isAdmin,
-  validate(companySchema.updateCompanySchema),
+  // validate(companySchema.updateCompanySchema),
+  CompanyController.getCompany
+);
+//update company
+router.post(
+  "/editFrencise",
+  authMiddleware,
+  isAdmin,
+  // validate(companySchema.updateCompanySchema),
   CompanyController.updateCompany
 );
-
-router.get("/:companyId", authMiddleware, CompanyController.getCompanyById);
 
 module.exports = router;

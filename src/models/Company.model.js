@@ -23,8 +23,8 @@ const CompanySchema = new mongoose.Schema(
     loanId: [],
     gstNumber: { type: String },
     firmtype: { type: String }, //TODO ask for this one whether string or boolean
-    tehsil: { type: String },
-    village: { type: String },
+    tehsil: { type: String }, //
+    village: { type: String }, //optional
     //TODO work on stateId and cityId
   },
   { timestamps: true }

@@ -25,12 +25,12 @@ router.post(
     { name: "otherReportFile", maxCount: 1 },
   ]),
   processDescriptions, // Middleware to handle descriptions
-  validate(reportSchema),
+  // validate(reportSchema),
   submitReport
 );
 
-// Get all reports (paginated) @access admin will get all and company will get its perticular farmer
-router.get("/getPreviousReports", authMiddleware, getAllReports);
+// Get all reports (paginated) @access admin will get all and company will get its perticular farmer @requestid in payload
+router.post("/getPreviousReports", authMiddleware, getAllReports);
 
 //Get all farmer reports
 router.get(

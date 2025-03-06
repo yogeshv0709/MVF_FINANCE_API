@@ -9,13 +9,19 @@ class CompanyController {
       .status(201)
       .json(new ApiResponse(200, company, "Company added successfully"));
   });
+  //get franchise
+  static getCompany = asyncHandler(async (req, res) => {
+    const { frenchiseId } = req.body;
+    const company = await CompanyService.getCompany(frenchiseId);
+    res
+      .status(200)
+      .json(new ApiResponse(200, company, "Company updated successfully"));
+  });
 
+  //update franchise
   static updateCompany = asyncHandler(async (req, res) => {
-    const { companyId } = req.params;
     const updates = req.body;
-
-    const company = await CompanyService.updateCompany(companyId, updates);
-
+    const company = await CompanyService.updateCompany(updates);
     res
       .status(200)
       .json(new ApiResponse(200, company, "Company updated successfully"));
@@ -30,16 +36,6 @@ class CompanyController {
     res
       .status(200)
       .json(new ApiResponse(200, result, "Companies fetched successfully"));
-  });
-
-  static getCompanyById = asyncHandler(async (req, res) => {
-    const company = await CompanyService.getCompanyById(
-      req.user,
-      req.params.companyId
-    );
-    res
-      .status(200)
-      .json(new ApiResponse(200, company, "Company fetched successfully"));
   });
 }
 
