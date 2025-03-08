@@ -44,26 +44,60 @@ class FarmerCropService {
     let totalFarmerCrops;
     const skip = (page - 1) * limit;
     if (userRole === userType.Admin) {
-      farmerCrops = await Farmer.find().skip(skip).limit(limit);
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+      // Update status in real-time when fetching farmer data
+      await Farmer.updateMany(
+        { lastReportDate: { $lt: oneWeekAgo }, status: "accept" },
+        { $set: { status: "pending" } }
+      );
+
+      farmerCrops = await Farmer.find()
+        .skip(skip)
+        .limit(limit)
+        .populate("state")
+        .populate("district");
+
+      farmerCrops = farmerCrops.map((farmer) => ({
+        ...farmer.toObject(), // Convert Mongoose document to plain object
+        state: farmer.state?.name || null, // Extract state name
+        district: farmer.district?.name || null, // Extract district name
+      }));
+
       totalFarmerCrops = await Farmer.countDocuments();
     } else if (userRole === userType.RSVC) {
       if (data.entype === "bank") {
         const company = await CompanyModel.findOne({ userId });
+        if (!company) {
+          throw new ApiError("No company found");
+        }
+        const oneWeekAgo = new Date();
+        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+        // Update status in real-time when fetching farmer data
+        await Farmer.updateMany(
+          { lastReportDate: { $lt: oneWeekAgo }, status: "accept" },
+          { $set: { status: "pending" } }
+        );
         const farmers = await Farmer.find({ companyId: company._id })
           .skip(skip)
           .limit(limit)
           .populate("state")
-          .populate("district");
+          .populate("district")
+          .lean();
 
         farmerCrops = farmers.map((farmer) => ({
-          ...farmer.toObject(), // Convert Mongoose document to plain object
-          state: farmer.state.name, // Extract state name
-          district: farmer.district.name, // Extract district name
+          ...farmer,
+          state: farmer.state.name,
+          district: farmer.district.name,
         }));
 
         totalFarmerCrops = await Farmer.countDocuments({
           companyId: company._id,
         });
+      } else if (data.entype === "user") {
+        farmerCrops = [];
       }
     } else {
       throw new ApiError(403, "Access Denied");

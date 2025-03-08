@@ -7,14 +7,15 @@ const { authMiddleware } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
+//@post @admin Add company
 router.post(
   "/addFrencise",
   authMiddleware,
   isAdmin,
-  // validate(companySchema.createCompanySchema),
+  validate(companySchema.createCompanySchema),
   CompanyController.addCompany
 );
-
+// @get @admin =>get all companies
 router.post(
   "/getAllFrencise",
   authMiddleware,
@@ -22,20 +23,20 @@ router.post(
   CompanyController.getCompanies
 );
 
-// @getFrenciseById=>frenchiseId=>post ask to sir this should be patch post work just pass it proper
+//@get @admin or @own company => get company
 router.post(
   "/getFrenciseById",
   authMiddleware,
-  isAdmin,
-  // validate(companySchema.updateCompanySchema),
+  validate(companySchema.getCompanySchema),
   CompanyController.getCompany
 );
-//update company
+
+//@patch @admin => update company
 router.post(
   "/editFrencise",
   authMiddleware,
   isAdmin,
-  // validate(companySchema.updateCompanySchema),
+  validate(companySchema.updateCompanySchema),
   CompanyController.updateCompany
 );
 

@@ -12,6 +12,7 @@ const reportRoute = require("./api/routes/report.routes");
 const authRoute = require("./api/routes/auth.routes");
 const dashboardRoute = require("./api/routes/dashboard.routes");
 const stateRoute = require("./api/routes/state_district.routes");
+const FarmerCropModel = require("./models/FarmerCrop.model");
 
 const server = express();
 

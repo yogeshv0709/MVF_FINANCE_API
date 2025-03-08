@@ -12,7 +12,8 @@ class CompanyController {
   //get franchise
   static getCompany = asyncHandler(async (req, res) => {
     const { frenchiseId } = req.body;
-    const company = await CompanyService.getCompany(frenchiseId);
+    const user = req.user;
+    const company = await CompanyService.getCompany(user, frenchiseId);
     res
       .status(200)
       .json(new ApiResponse(200, company, "Company fetched successfully"));

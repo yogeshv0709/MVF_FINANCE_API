@@ -8,10 +8,10 @@ const {
 
 const router = express.Router();
 
-// !@get
+// @get admin dashboard
 router.route("/dashboard").post(authMiddleware, isAdmin, getAdminDashboard);
 
-// !get
+// @get company dashboard
 router.route("/franchiseDashboard").post(authMiddleware, getCompanyDashboard);
 
 module.exports = router;

@@ -30,6 +30,11 @@ class ReportService {
     });
 
     await report.save();
+
+    farmer.status = "accept";
+    farmer.lastReportDate = new Date();
+    await farmer.save();
+
     return report;
   }
 

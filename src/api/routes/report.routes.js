@@ -25,7 +25,7 @@ router.post(
     { name: "excel", maxCount: 1 },
   ]),
   processDescriptions, // Middleware to handle descriptions
-  // validate(reportSchema),
+  validate(reportSchema),
   submitReport
 );
 
@@ -33,19 +33,19 @@ router.post(
 router.post("/getPreviousReports", authMiddleware, getAllReports);
 
 //Get all farmer reports
-router.get(
-  "/:farmerId",
-  authMiddleware,
-  validate(objectIdSchema, "params"),
-  getAllFarmerReports
-);
+// router.get(
+//   "/:farmerId",
+//   authMiddleware,
+//   validate(objectIdSchema, "params"),
+//   getAllFarmerReports
+// );
 
 // Get a single report by ID
-router.get(
-  "/:reportId",
-  authMiddleware,
-  validate(objectIdSchema, "params"),
-  getReportById
-);
+// router.get(
+//   "/:reportId",
+//   authMiddleware,
+//   validate(objectIdSchema, "params"),
+//   getReportById
+// );
 
 module.exports = router;

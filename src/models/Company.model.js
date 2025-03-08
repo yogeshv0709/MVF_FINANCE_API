@@ -3,11 +3,11 @@ const CounterModel = require("./Counter.model");
 
 const CompanySchema = new mongoose.Schema(
   {
-    name: { type: String },
-    firmName: { type: String },
+    name: { type: String, trim: true },
+    firmName: { type: String, trim: true },
     frenchiseId: { type: String },
-    address: { type: String },
-    email: { type: String },
+    address: { type: String, trim: true },
+    email: { type: String, trim: true },
     contact: { type: Number },
     stateId: { type: mongoose.Schema.ObjectId, ref: "State", require: true },
     cityId: {
@@ -16,7 +16,7 @@ const CompanySchema = new mongoose.Schema(
       require: true,
     },
     pinCode: { type: Number },
-    IFSC: { type: String },
+    IFSC: { type: String, trim: true },
     blocked: { type: Boolean, default: false },
     status: {
       type: String,
@@ -25,10 +25,10 @@ const CompanySchema = new mongoose.Schema(
     },
     userId: { type: mongoose.Types.ObjectId, require: true, ref: "User" },
     loanId: [],
-    gstNumber: { type: String },
-    firmtype: { type: String },
-    tehsil: { type: String }, //
-    village: { type: String }, //optional
+    gstNumber: { type: String, trim: true },
+    firmType: { type: String, trim: true },
+    tehsil: { type: String, trim: true },
+    village: { type: String, trim: true },
   },
   { timestamps: true }
 );

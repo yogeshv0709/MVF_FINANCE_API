@@ -5,13 +5,13 @@ const ReportSchema = new mongoose.Schema(
     images: [
       {
         images: { type: String }, // Image URL
-        imagedescription: { type: String }, // Description
+        imagedescription: { type: String, trim: true }, // Description
       },
     ],
     weatherReport: { type: String }, // File URL for Weather Forecast
     excel: { type: String }, // excel
 
-    alert_notifications: { type: String, required: true },
+    alert_notifications: { type: String, required: true, trim: true },
     farmerId: { type: mongoose.Schema.ObjectId, ref: "Farmer", required: true },
     requestId: { type: String },
   },

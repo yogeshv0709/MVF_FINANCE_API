@@ -11,6 +11,7 @@ const {
 const RoleModel = require("../models/Role.model");
 const StateModel = require("../models/State.model");
 const StateDistrict = require("../models/District.model");
+const { checkCompanyAccess } = require("../utils/authHelper");
 
 class CompanyService {
   static async addCompany(data) {
@@ -92,13 +93,17 @@ class CompanyService {
     return companies;
   }
 
-  static async getCompany(frenchiseId) {
+  static async getCompany(user, frenchiseId) {
+    console.log(user);
     const company = await Company.findOne({ frenchiseId })
       .populate("stateId", "stateId")
       .populate("cityId", "districtId");
 
     if (!company) {
       throw new ApiError(404, "Company not found");
+    }
+    if (!checkCompanyAccess(user, company)) {
+      throw new ApiError(403, "Access denied");
     }
 
     const formattedCompany = {
@@ -111,8 +116,8 @@ class CompanyService {
   }
 
   static async updateCompany(updates) {
-    const { stateId, cityId, pincode } = updates;
-    const company = await Company.findOne({ frenchiseId: updates.frenchiseId });
+    const { stateId, cityId, pincode, frenchiseId } = updates;
+    const company = await Company.findOne({ frenchiseId });
     if (!company) {
       throw new ApiError(404, "Company not found");
     }

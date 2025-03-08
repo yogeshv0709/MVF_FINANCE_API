@@ -35,7 +35,6 @@ const getAllState = asyncHandler(async (req, res) => {
 // Get Districts by State ID with Redis Cache
 const getAllDistrict = asyncHandler(async (req, res) => {
   const { stateId } = req.body;
-  // console.log(stateId.stateId);
   if (!stateId) {
     throw new ApiError(400, "Please provide a valid stateId");
   }

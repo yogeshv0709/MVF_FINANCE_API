@@ -6,32 +6,32 @@ const CompanyModel = require("./Company.model");
 
 const FarmerCropSchema = new mongoose.Schema(
   {
-    farmerName: { type: String, required: true },
-    contact: { type: String, required: true },
-    email: { type: String },
-    address: { type: String },
-    adharNumber: { type: String },
+    farmerName: { type: String, required: true, trim: true },
+    contact: { type: String, required: true, trim: true },
+    email: { type: String, trim: true },
+    address: { type: String, trim: true },
+    adharNumber: { type: String, trim: true },
     state: { type: mongoose.Schema.ObjectId, ref: "State", required: true },
     district: {
       type: mongoose.Schema.ObjectId,
       ref: "StateDistrict",
       required: true,
     },
-    tehsil: { type: String },
-    village: { type: String },
-    pinCode: { type: String, required: true },
+    tehsil: { type: String, trim: true },
+    village: { type: String, trim: true },
+    pinCode: { type: String, required: true, trim: true },
 
-    cropName: { type: String, required: true },
-    cropSeason: { type: String, required: true },
-    year: { type: Number },
+    cropName: { type: String, required: true, trim: true },
+    cropSeason: { type: String, required: true, trim: true },
+    year: { type: Number, required: true },
     sowingDate: { type: Date, required: true },
     approximateYield: { type: Number },
 
-    fieldName: { type: String, required: true },
+    fieldName: { type: String, required: true, trim: true },
     area: { type: Number, required: true }, // Acres
     Latitude: { type: Number },
     Longitude: { type: Number },
-    wkt: { type: String, required: true },
+    wkt: { type: String, required: true, trim: true },
 
     companyId: {
       type: mongoose.Types.ObjectId,
@@ -41,8 +41,11 @@ const FarmerCropSchema = new mongoose.Schema(
     userId: { type: String },
     requestId: { type: String, unique: true },
     fieldId: { type: String, unique: true },
-    enquiryType: { type: String },
+    enquiryType: { type: String, trim: true },
     type: { type: String, default: "test" },
+
+    status: { type: String, enum: ["pending", "accept"], default: "pending" },
+    lastReportDate: { type: Date, default: null },
   },
   { timestamps: true }
 );
