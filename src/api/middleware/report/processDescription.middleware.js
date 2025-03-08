@@ -3,13 +3,13 @@ const processDescriptions = (req, res, next) => {
     const descriptions = [];
 
     // Check if descriptions exist in req.body
-    if (req.body.descriptions) {
-      const descArray = Array.isArray(req.body.descriptions)
-        ? req.body.descriptions
+    if (req.body.imageDescriptions) {
+      const descArray = Array.isArray(req.body.imageDescriptions)
+        ? req.body.imageDescriptions
         : [req.body.descriptions];
 
       descArray.forEach((text, index) => {
-        descriptions[index] = { imagedescription: text, images: null };
+        descriptions[index] = { imageDescriptions: text, images: null };
       });
     }
 
@@ -17,13 +17,13 @@ const processDescriptions = (req, res, next) => {
     if (req.files?.images) {
       req.files.images.forEach((file, index) => {
         if (!descriptions[index]) {
-          descriptions[index] = { imagedescription: "", images: null };
+          descriptions[index] = { imageDescriptions: "", images: null };
         }
         descriptions[index].images = file.path; // Store file URL
       });
     }
 
-    req.body.descriptions = descriptions;
+    req.body.imageDescriptions = descriptions;
     next();
   } catch (error) {
     return res.status(400).json({ message: "Invalid descriptions format" });

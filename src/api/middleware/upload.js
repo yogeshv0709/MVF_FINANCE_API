@@ -25,6 +25,7 @@ const fileFilter = (req, file, cb) => {
     "application/pdf",
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // .xlsx
     "application/vnd.ms-excel", // .xls
+    "text/csv", // .csv
   ];
   allowedTypes.includes(file.mimetype)
     ? cb(null, true)

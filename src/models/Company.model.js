@@ -9,8 +9,12 @@ const CompanySchema = new mongoose.Schema(
     address: { type: String },
     email: { type: String },
     contact: { type: Number },
-    state: { type: String },
-    district: { type: String },
+    stateId: { type: mongoose.Schema.ObjectId, ref: "State", require: true },
+    cityId: {
+      type: mongoose.Schema.ObjectId,
+      ref: "StateDistrict",
+      require: true,
+    },
     pinCode: { type: Number },
     IFSC: { type: String },
     blocked: { type: Boolean, default: false },
@@ -22,10 +26,9 @@ const CompanySchema = new mongoose.Schema(
     userId: { type: mongoose.Types.ObjectId, require: true, ref: "User" },
     loanId: [],
     gstNumber: { type: String },
-    firmtype: { type: String }, //TODO ask for this one whether string or boolean
+    firmtype: { type: String },
     tehsil: { type: String }, //
     village: { type: String }, //optional
-    //TODO work on stateId and cityId
   },
   { timestamps: true }
 );

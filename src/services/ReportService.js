@@ -6,16 +6,15 @@ const { userType } = require("../utils/constant");
 
 class ReportService {
   static async createReport(data, files) {
-    const { descriptions, alert_notifications, requestId } = data;
+    const { imageDescriptions, requestId, description } = data;
     const farmer = await FarmerCropModel.findOne({ requestId });
     if (!farmer) {
       throw new Error("Invalid requestId.");
     }
-
     // Map descriptions into the required format
-    const formattedImages = descriptions.map((desc) => ({
+    const formattedImages = imageDescriptions.map((desc) => ({
       images: desc.images,
-      imagedescription: desc.imagedescription,
+      imagedescription: desc.imageDescriptions,
     }));
 
     // Create new report entry
@@ -23,13 +22,11 @@ class ReportService {
       requestId: requestId,
       images: formattedImages,
       farmerId: farmer._id,
-      alert_notifications,
-      weatherReport: files["weatherForecastFile"]
-        ? files["weatherForecastFile"][0].path
+      alert_notifications: description,
+      weatherReport: files["weatherReport"]
+        ? files["weatherReport"][0].path
         : null,
-      otherReportFile: files["otherReportFile"]
-        ? files["otherReportFile"][0].path
-        : null,
+      excel: files["excel"] ? files["excel"][0].path : null,
     });
 
     await report.save();

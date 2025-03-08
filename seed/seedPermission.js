@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
-const RoleModel = require("./src/models/Role.model");
-const Permission = require("./src/models/Permission.model"); // Import Permission Model
+const RoleModel = require("../src/models/Role.model");
+const Permission = require("../src/models/Permission.model"); // Import Permission Model
 
 mongoose
   .connect(process.env.MONGO_URI)

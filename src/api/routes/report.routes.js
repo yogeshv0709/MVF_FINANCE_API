@@ -21,8 +21,8 @@ router.post(
   isAdmin,
   upload.fields([
     { name: "images", maxCount: 5 },
-    { name: "weatherForecastFile", maxCount: 1 },
-    { name: "otherReportFile", maxCount: 1 },
+    { name: "weatherReport", maxCount: 1 },
+    { name: "excel", maxCount: 1 },
   ]),
   processDescriptions, // Middleware to handle descriptions
   // validate(reportSchema),

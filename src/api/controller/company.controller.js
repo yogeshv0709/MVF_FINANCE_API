@@ -6,7 +6,7 @@ class CompanyController {
   static addCompany = asyncHandler(async (req, res) => {
     const company = await CompanyService.addCompany(req.body);
     res
-      .status(201)
+      .status(200)
       .json(new ApiResponse(200, company, "Company added successfully"));
   });
   //get franchise
@@ -15,7 +15,7 @@ class CompanyController {
     const company = await CompanyService.getCompany(frenchiseId);
     res
       .status(200)
-      .json(new ApiResponse(200, company, "Company updated successfully"));
+      .json(new ApiResponse(200, company, "Company fetched successfully"));
   });
 
   //update franchise

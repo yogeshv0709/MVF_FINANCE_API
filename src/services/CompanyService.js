@@ -2,7 +2,6 @@ const mongoose = require("mongoose");
 const ApiError = require("../errors/ApiErrors");
 const Company = require("../models/Company.model");
 const UserModel = require("../models/User.model");
-const { checkCompanyAccess } = require("../utils/authHelper");
 const { userType } = require("../utils/constant");
 const sendPasswordMail = require("../utils/email.util");
 const {
@@ -10,6 +9,8 @@ const {
   hashPassword,
 } = require("../utils/password.util");
 const RoleModel = require("../models/Role.model");
+const StateModel = require("../models/State.model");
+const StateDistrict = require("../models/District.model");
 
 class CompanyService {
   static async addCompany(data) {
@@ -17,7 +18,7 @@ class CompanyService {
     session.startTransaction();
 
     try {
-      const { email } = data;
+      const { email, stateId, cityId, pincode } = data;
 
       // Check if the email already exists
       const existingUser = await UserModel.findOne({ email }).session(session);
@@ -39,8 +40,22 @@ class CompanyService {
         roleId,
       });
       await user.save({ session });
+      const state = await StateModel.findOne({ stateId });
+      if (!state) {
+        throw new ApiError("Please provide valid stateId");
+      }
+      const city = await StateDistrict.findOne({ districtId: cityId });
+      if (!city) {
+        throw new ApiError("Please provide valid cityId");
+      }
 
-      const company = new Company({ ...data, userId: user._id });
+      const company = new Company({
+        ...data,
+        userId: user._id,
+        stateId: state._id,
+        cityId: city._id,
+        pinCode: pincode,
+      });
       await company.save({ session });
 
       await session.commitTransaction(); // Commit if everything is successful
@@ -54,7 +69,7 @@ class CompanyService {
       return company;
     } catch (error) {
       await session.abortTransaction(); // Rollback in case of an error
-      throw error;
+      throw new ApiError(400, error);
     } finally {
       session.endSession();
     }
@@ -63,9 +78,11 @@ class CompanyService {
   static async getCompanies(page = 1, limit = 10) {
     const skip = (page - 1) * limit;
 
-    const companies = await Company.find().skip(skip).limit(limit);
+    const companies = await Company.find()
+      .skip(skip)
+      .limit(limit)
+      .populate("stateId cityId");
     const totalCompanies = await Company.countDocuments();
-
     // return {
     //   companies,
     //   currentPage: page,
@@ -76,25 +93,50 @@ class CompanyService {
   }
 
   static async getCompany(frenchiseId) {
-    const company = await Company.findOne({ frenchiseId });
+    const company = await Company.findOne({ frenchiseId })
+      .populate("stateId", "stateId")
+      .populate("cityId", "districtId");
+
     if (!company) {
       throw new ApiError(404, "Company not found");
     }
-    return company;
+
+    const formattedCompany = {
+      ...company.toObject(),
+      stateId: company.stateId?.stateId,
+      cityId: company.cityId?.districtId,
+    };
+
+    return formattedCompany;
   }
 
   static async updateCompany(updates) {
+    const { stateId, cityId, pincode } = updates;
     const company = await Company.findOne({ frenchiseId: updates.frenchiseId });
     if (!company) {
       throw new ApiError(404, "Company not found");
     }
+    const state = await StateModel.findOne({ stateId });
+    if (!state) {
+      throw new ApiError(400, "no state");
+    }
+    const city = await StateDistrict.findOne({ districtId: cityId });
+    if (!city) {
+      throw new ApiError(400, "no city");
+    }
+    const finalUpdates = {
+      ...updates,
+      stateId: state._id,
+      cityId: city._id,
+      pinCode: pincode,
+    };
 
     // Update the found company
     const updatedCompany = await Company.findByIdAndUpdate(
       company._id, // Use the actual ObjectId
-      updates,
+      finalUpdates,
       { new: true, runValidators: true }
-    );
+    ).populate("stateId cityId");
 
     return updatedCompany;
   }

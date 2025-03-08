@@ -4,12 +4,12 @@ const ReportSchema = new mongoose.Schema(
   {
     images: [
       {
-        images: { type: String, required: true }, // Image URL
-        imagedescription: { type: String, required: true }, // Description
+        images: { type: String }, // Image URL
+        imagedescription: { type: String }, // Description
       },
     ],
     weatherReport: { type: String }, // File URL for Weather Forecast
-    otherReportFile: { type: String }, // File URL for Other Reports
+    excel: { type: String }, // excel
 
     alert_notifications: { type: String, required: true },
     farmerId: { type: mongoose.Schema.ObjectId, ref: "Farmer", required: true },

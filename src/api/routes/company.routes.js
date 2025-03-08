@@ -8,7 +8,7 @@ const { authMiddleware } = require("../middleware/authMiddleware");
 const router = express.Router();
 
 router.post(
-  "/addFranchise",
+  "/addFrencise",
   authMiddleware,
   isAdmin,
   // validate(companySchema.createCompanySchema),

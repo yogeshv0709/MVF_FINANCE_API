@@ -7,19 +7,23 @@ const CompanyModel = require("./Company.model");
 const FarmerCropSchema = new mongoose.Schema(
   {
     farmerName: { type: String, required: true },
-    contactNumber: { type: String, required: true },
+    contact: { type: String, required: true },
     email: { type: String },
-    address: { type: String, required: true },
-    aadharNumber: { type: String, required: true },
-    state: { type: String, required: true },
-    district: { type: String, required: true },
+    address: { type: String },
+    adharNumber: { type: String },
+    state: { type: mongoose.Schema.ObjectId, ref: "State", required: true },
+    district: {
+      type: mongoose.Schema.ObjectId,
+      ref: "StateDistrict",
+      required: true,
+    },
     tehsil: { type: String },
     village: { type: String },
     pinCode: { type: String, required: true },
 
     cropName: { type: String, required: true },
     cropSeason: { type: String, required: true },
-    seasonYear: { type: Number, required: true },
+    year: { type: Number },
     sowingDate: { type: Date, required: true },
     approximateYield: { type: Number },
 
@@ -37,7 +41,8 @@ const FarmerCropSchema = new mongoose.Schema(
     userId: { type: String },
     requestId: { type: String, unique: true },
     fieldId: { type: String, unique: true },
-    //!TODO: ask for type and enquiryType type hardcore and enquiryType bank
+    enquiryType: { type: String },
+    type: { type: String, default: "test" },
   },
   { timestamps: true }
 );

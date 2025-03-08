@@ -63,7 +63,7 @@ class AuthService {
         const roleId = await RoleModel.findOne({ name }).populate(
           "isPermission"
         );
-        const { password: _, ...rest } = user.toObject();
+        const { password: _, token: hideIt, ...rest } = user.toObject();
         const updatedRest = { ...rest, staffId, blocked, contact };
 
         return {
