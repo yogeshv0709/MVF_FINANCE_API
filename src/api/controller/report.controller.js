@@ -1,4 +1,4 @@
-const ReportService = require("../../services/ReportService");
+const ReportService = require("../../services/report.service");
 const ApiResponse = require("../../utils/ApiResponse");
 const { asyncHandler } = require("../../utils/asyncHandler");
 
@@ -15,38 +15,12 @@ const getAllReports = asyncHandler(async (req, res) => {
   page = parseInt(page) || 1;
   limit = parseInt(limit) || 10;
 
-  const reportsData = await ReportService.getAllReports(user, page, limit);
+  const reportsData = await ReportService.getAllReports(user, req.body, page, limit);
 
   res.status(200).json(new ApiResponse(200, reportsData));
-});
-
-//Get all report by farmer Id
-const getAllFarmerReports = asyncHandler(async (req, res) => {
-  let { page, limit } = req.query;
-  const user = req.user;
-  const { farmerId } = req.params;
-  page = parseInt(page) || 1;
-  limit = parseInt(limit) || 10;
-  const reportsData = await ReportService.getAllFarmerReports(
-    user,
-    farmerId,
-    page,
-    limit
-  );
-  res.status(200).json(new ApiResponse(200, reportsData));
-});
-
-// Get a single report by ID
-const getReportById = asyncHandler(async (req, res) => {
-  const user = req.user;
-  const report = await ReportService.getReportById(user, req.params.reportId);
-
-  res.status(200).json(new ApiResponse(200, report));
 });
 
 module.exports = {
   submitReport,
   getAllReports,
-  getReportById,
-  getAllFarmerReports,
 };

@@ -1,10 +1,7 @@
 const express = require("express");
-const { authMiddleware } = require("../middleware/authMiddleware");
-const isAdmin = require("../middleware/isAdmin");
-const {
-  getAdminDashboard,
-  getCompanyDashboard,
-} = require("../controller/dashboard.controller");
+const { authMiddleware } = require("../middleware/auth.middleware");
+const isAdmin = require("../middleware/isAdmin.middleware");
+const { getAdminDashboard, getCompanyDashboard } = require("../controller/dashboard.controller");
 
 const router = express.Router();
 

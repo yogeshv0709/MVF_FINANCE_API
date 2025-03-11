@@ -1,4 +1,4 @@
-const { userType } = require("./constant");
+const { userType } = require("./constants/constant");
 
 const checkCompanyAccess = (user, company) => {
   if (!user) return false;

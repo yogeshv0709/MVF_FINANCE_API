@@ -1,16 +1,17 @@
 const nodemailer = require("nodemailer");
+const envVars = require("../../config/server.config");
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
+    user: envVars.EMAIL_USER,
+    pass: envVars.EMAIL_PASS,
   },
 });
 
 async function sendPasswordMail(email, password) {
   await transporter.sendMail({
-    from: process.env.EMAIL_USER,
+    from: envVars.EMAIL_USER,
     to: email,
     subject: "Your password",
     html: `
@@ -39,4 +40,26 @@ async function sendPasswordMail(email, password) {
   });
 }
 
-module.exports = sendPasswordMail;
+async function sendResetPasswordMail(email, resetUrl) {
+  await transporter.sendMail({
+    from: `"Support Team" <${envVars.EMAIL_USER}>`,
+    to: email,
+    subject: "Password Reset Request",
+    html: `
+      <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+        <h2>Password Reset Request</h2>
+        <p>We received a request to reset your password. Click the button below to proceed:</p>
+        <p style="text-align: center;">
+          <a href="${resetUrl}" style="display: inline-block; padding: 10px 20px; color: #fff; background-color: #007BFF; text-decoration: none; border-radius: 5px;">
+            Reset Password
+          </a>
+        </p>
+        <p>If you did not request this, please ignore this email. Your password will remain unchanged.</p>
+        <p>Best regards,</p>
+        <p><strong>Your Company Name</strong></p>
+      </div>
+    `,
+  });
+}
+
+module.exports = { sendPasswordMail, sendResetPasswordMail };

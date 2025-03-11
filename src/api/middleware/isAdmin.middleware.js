@@ -1,5 +1,5 @@
 const ApiError = require("../../errors/ApiErrors");
-const { userType } = require("../../utils/constant");
+const { userType } = require("../../utils/constants/constant");
 
 const isAdmin = (req, res, next) => {
   if (req.user?.type !== userType.Admin) {

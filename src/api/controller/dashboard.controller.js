@@ -1,4 +1,4 @@
-const DashboardService = require("../../services/DashboardService");
+const DashboardService = require("../../services/dashboard.service");
 const { asyncHandler } = require("../../utils/asyncHandler");
 
 const getAdminDashboard = asyncHandler(async (req, res) => {
@@ -13,10 +13,7 @@ const getAdminDashboard = asyncHandler(async (req, res) => {
 
 const getCompanyDashboard = asyncHandler(async (req, res) => {
   const { userId, type } = req.user;
-  const dashboard = await DashboardService.getCompanyDashboardStats(
-    userId,
-    type
-  );
+  const dashboard = await DashboardService.getCompanyDashboardStats(userId, type);
 
   res.status(200).json({
     code: 200,

@@ -4,7 +4,7 @@ const StateDistrict = require("../models/District.model");
 const Farmer = require("../models/FarmerCrop.model");
 const StateModel = require("../models/State.model");
 const { checkCompanyAccess } = require("../utils/authHelper");
-const { userType } = require("../utils/constant");
+const { userType } = require("../utils/constants/constant");
 
 class FarmerCropService {
   // Create a new Farmer Crop entry
@@ -54,10 +54,12 @@ class FarmerCropService {
       );
 
       farmerCrops = await Farmer.find()
+        .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
         .populate("state")
-        .populate("district");
+        .populate("district")
+        .populate("companyId", "firmName");
 
       farmerCrops = farmerCrops.map((farmer) => ({
         ...farmer.toObject(), // Convert Mongoose document to plain object
@@ -81,10 +83,12 @@ class FarmerCropService {
           { $set: { status: "pending" } }
         );
         const farmers = await Farmer.find({ companyId: company._id })
+          .sort({ createdAt: -1 })
           .skip(skip)
           .limit(limit)
           .populate("state")
           .populate("district")
+          .populate("companyId", "firmName")
           .lean();
 
         farmerCrops = farmers.map((farmer) => ({
@@ -103,12 +107,6 @@ class FarmerCropService {
       throw new ApiError(403, "Access Denied");
     }
 
-    // return {
-    //   farmerCrops,
-    //   currentPage: page,
-    //   totalPages: Math.ceil(totalFarmerCrops / limit),
-    //   totalFarmerCrops,
-    // };
     return farmerCrops;
   }
 

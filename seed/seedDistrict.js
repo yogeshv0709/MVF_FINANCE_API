@@ -20,9 +20,7 @@ const insertData = async () => {
         .pipe(csvParser())
         .on("data", (row) => {
           data.push({
-            _id: row._id
-              ? new mongoose.Types.ObjectId(row._id)
-              : new mongoose.Types.ObjectId(), // Handle missing/invalid _id
+            _id: row._id ? new mongoose.Types.ObjectId(row._id) : new mongoose.Types.ObjectId(), // Handle missing/invalid _id
             stateId: row.stateId || null,
             districtId: row.districtId || null,
             name: row.name || null,

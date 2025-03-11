@@ -1,7 +1,8 @@
 const server = require("./server.js");
 const connectToMongoDB = require("./config/mongo.config.js");
+const envVars = require("./config/server.config.js");
 
-const PORT = process.env.PORT || 3000;
+const PORT = envVars.PORT || 3000;
 
 server.listen(PORT, async () => {
   await connectToMongoDB();

@@ -4,12 +4,13 @@ const processDescriptions = (req, res, next) => {
 
     // Check if descriptions exist in req.body
     if (req.body.imageDescriptions) {
+      console.log(req.body.imageDescriptions);
       const descArray = Array.isArray(req.body.imageDescriptions)
         ? req.body.imageDescriptions
-        : [req.body.descriptions];
+        : [req.body.imageDescriptions];
 
       descArray.forEach((text, index) => {
-        descriptions[index] = { imageDescriptions: text, images: null };
+        descriptions[index] = { imageDescriptions: text || "", images: null };
       });
     }
 
@@ -22,7 +23,6 @@ const processDescriptions = (req, res, next) => {
         descriptions[index].images = file.path; // Store file URL
       });
     }
-
     req.body.imageDescriptions = descriptions;
     next();
   } catch (error) {

@@ -6,11 +6,7 @@ const passwordSchema = z
   .min(8, "Password must be at least 8 characters")
   .max(64, "Password must be at most 64 characters");
 
-const emailSchema = z
-  .string()
-  .trim()
-  .toLowerCase()
-  .email("Invalid email format");
+const emailSchema = z.string().trim().toLowerCase().email("Invalid email format");
 
 const LoginSchema = z
   .object({
@@ -32,4 +28,23 @@ const changePasswordSchema = z.object({
   newPassword: passwordSchema,
 });
 
-module.exports = { LoginSchema, RegisterSchema, changePasswordSchema };
+const UserSchemaSendEmail = z
+  .object({
+    email: emailSchema,
+  })
+  .strict();
+
+const UserSchemaResetPassword = z
+  .object({
+    token: z.string().min(10, "Invalid token").max(100, "Invalid token"),
+    newPassword: passwordSchema,
+  })
+  .strict();
+
+module.exports = {
+  LoginSchema,
+  RegisterSchema,
+  changePasswordSchema,
+  UserSchemaSendEmail,
+  UserSchemaResetPassword,
+};

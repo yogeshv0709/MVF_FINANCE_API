@@ -73,9 +73,7 @@ mongoose
 
     // Insert Permissions into DB
     const adminPermissionDocs = await Permission.insertMany(adminPermissions);
-    const franchisePermissionDocs = await Permission.insertMany(
-      franchisePermissions
-    );
+    const franchisePermissionDocs = await Permission.insertMany(franchisePermissions);
 
     // Insert Roles into DB
     await RoleModel.create([

@@ -1,10 +1,12 @@
 const express = require("express");
 const AuthController = require("../controller/auth.controller");
-const { authMiddleware } = require("../middleware/authMiddleware");
-const validate = require("../middleware/zodValidate");
+const { authMiddleware } = require("../middleware/auth.middleware");
+const validate = require("../middleware/zod.middleware");
 const {
   LoginSchema,
   changePasswordSchema,
+  UserSchemaSendEmail,
+  UserSchemaResetPassword,
 } = require("../validators/user.validator");
 
 const router = express.Router();
@@ -18,13 +20,15 @@ router.route("/login").post(validate(LoginSchema), authController.login);
 router.route("/staffDetail").post(authMiddleware, authController.staffDetail);
 
 router
-  .route("/change-password")
-  .post(
-    authMiddleware,
-    validate(changePasswordSchema),
-    authController.changePassword
-  );
+  .route("/changePassword")
+  .post(authMiddleware, validate(changePasswordSchema), authController.changePassword);
 
 // router.route("/logout").get(authMiddleware, authController.logout);
+
+router.route("/forget-password").post(validate(UserSchemaSendEmail), authController.forgetPassword);
+
+router
+  .route("/reset-password")
+  .post(validate(UserSchemaResetPassword), authController.resetPassword);
 
 module.exports = router;

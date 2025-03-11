@@ -27,7 +27,7 @@ const FarmerCropSchema = new mongoose.Schema(
     sowingDate: { type: Date, required: true },
     approximateYield: { type: Number },
 
-    fieldName: { type: String, required: true, trim: true },
+    fieldName: { type: String, trim: true },
     area: { type: Number, required: true }, // Acres
     Latitude: { type: Number },
     Longitude: { type: Number },

@@ -2,12 +2,8 @@ const mongoose = require("mongoose");
 const ApiError = require("../errors/ApiErrors");
 const Company = require("../models/Company.model");
 const UserModel = require("../models/User.model");
-const { userType } = require("../utils/constant");
-const sendPasswordMail = require("../utils/email.util");
-const {
-  generateStrongPassword,
-  hashPassword,
-} = require("../utils/password.util");
+const { userType } = require("../utils/constants/constant");
+const { generateStrongPassword, hashPassword } = require("../utils/helpers/password.util");
 const RoleModel = require("../models/Role.model");
 const StateModel = require("../models/State.model");
 const StateDistrict = require("../models/District.model");
@@ -80,16 +76,11 @@ class CompanyService {
     const skip = (page - 1) * limit;
 
     const companies = await Company.find()
+      .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
       .populate("stateId cityId");
-    const totalCompanies = await Company.countDocuments();
-    // return {
-    //   companies,
-    //   currentPage: page,
-    //   totalPages: Math.ceil(totalCompanies / limit),
-    //   totalCompanies,
-    // };
+
     return companies;
   }
 

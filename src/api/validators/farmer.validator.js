@@ -1,5 +1,5 @@
 const { z } = require("zod");
-const { stateSchema, citySchema } = require("./companyValidator");
+const { stateSchema, citySchema } = require("./company.validator");
 
 const FarmerCropSchema = z
   .object({
@@ -13,25 +13,17 @@ const FarmerCropSchema = z
       .min(10, "Contact number must be 10 digits")
       .max(10, "Contact number must be 10 digits")
       .regex(/^\d+$/, "Contact number must contain only digits"),
-    email: z.string().email("Invalid email format").max(100).optional(),
-    address: z
-      .string()
-      .max(255, "Address must not exceed 255 characters")
-      .optional(),
+    email: z.string().max(100).optional(),
+    address: z.string().max(255, "Address must not exceed 255 characters").optional(),
     adharNumber: z
       .string()
       .length(12, "Aadhar number must be exactly 12 digits")
-      .regex(/^\d+$/, "Aadhar number must contain only digits"),
+      .regex(/^\d+$/, "Aadhar number must contain only digits")
+      .optional(),
     state: stateSchema,
     district: citySchema,
-    tehsil: z
-      .string()
-      .max(100, "tehsil can not be more than 100 character")
-      .optional(),
-    village: z
-      .string()
-      .max(100, "village can not be more than 100 character")
-      .optional(),
+    tehsil: z.string().max(100, "tehsil can not be more than 100 character").optional(),
+    village: z.string().max(100, "village can not be more than 100 character").optional(),
     pinCode: z
       .string()
       .length(6, "Pin code must be exactly 6 digits")
@@ -68,32 +60,39 @@ const FarmerCropSchema = z
     fieldName: z
       .string()
       .min(1, "Field name is required")
-      .max(100, "Field name must not exceed 100 characters"),
+      .max(100, "Field name must not exceed 100 characters")
+      .optional(),
+
     area: z
-      .number()
-      .min(0.1, "Field area must be greater than 0") // Acres
-      .max(10000, "Unrealistic field area"),
-    latitude: z
-      .number()
+      .string()
+      .trim()
+      .regex(/^\d+(\.\d+)?$/, "Field area must be a valid number")
+      .refine((val) => parseFloat(val) >= 0.1, {
+        message: "Field area must be greater than 0",
+      })
+      .refine((val) => parseFloat(val) <= 10000, {
+        message: "Unrealistic field area",
+      }),
+
+    // latitude: z.string().trim().optional(),
+    latitude: z.string().trim().min(-90, "Invalid latitude").max(90, "Invalid latitude").optional(),
+
+    longitude: z
+      .string()
+      .trim()
       .min(-90, "Invalid latitude")
       .max(90, "Invalid latitude")
       .optional(),
-    longitude: z
-      .number()
-      .min(-180, "Invalid longitude")
-      .max(180, "Invalid longitude")
-      .optional(),
+
     wkt: z.string().min(1, "WKT data is required").max(10000),
+    type: z.string().min(1, "Type is required").max(50, "no more than 50").optional(),
+    enquiryType: z.string().min(1, "Enquiry Type is required").max(50, "no more than 50"),
   })
   .strict();
 
 const getFarmersCropSchema = z
   .object({
-    entype: z
-      .string()
-      .min(1, "Invalid entype")
-      .max(25, "Invalid entype")
-      .optional(),
+    entype: z.string().min(1, "Invalid entype").max(25, "Invalid entype").optional(),
   })
   .strict();
 

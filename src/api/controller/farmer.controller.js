@@ -1,4 +1,4 @@
-const FarmerCropService = require("../../services/FarmerService");
+const FarmerCropService = require("../../services/farmer.service");
 const ApiResponse = require("../../utils/ApiResponse");
 const { asyncHandler } = require("../../utils/asyncHandler");
 
@@ -10,25 +10,17 @@ const addFarmerCrop = asyncHandler(async (req, res) => {
 });
 
 const getFarmerCrops = asyncHandler(async (req, res) => {
-  console.log("in farmer controller");
   let { page, limit } = req.query;
   const data = req.body;
   const user = req.user;
   page = parseInt(page) || 1;
   limit = parseInt(limit) || 10;
-  const result = await FarmerCropService.getFarmerCrops(
-    user,
-    data,
-    page,
-    limit
-  );
+  const result = await FarmerCropService.getFarmerCrops(user, data, page, limit);
   res.status(200).json(new ApiResponse(200, result));
 });
 
 const getFarmerCropById = asyncHandler(async (req, res) => {
-  const farmerCrop = await FarmerCropService.getFarmerCropById(
-    req.params.farmerId
-  );
+  const farmerCrop = await FarmerCropService.getFarmerCropById(req.params.farmerId);
   res.status(200).json(new ApiResponse(200, farmerCrop));
 });
 

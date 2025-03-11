@@ -11,6 +11,9 @@ const ReportSchema = new mongoose.Schema(
     weatherReport: { type: String }, // File URL for Weather Forecast
     excel: { type: String }, // excel
 
+    schedule_advisory1: { type: String },
+    schedule_advisory2: { type: String },
+
     alert_notifications: { type: String, required: true, trim: true },
     farmerId: { type: mongoose.Schema.ObjectId, ref: "Farmer", required: true },
     requestId: { type: String },

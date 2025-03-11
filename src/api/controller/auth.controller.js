@@ -1,9 +1,9 @@
 const jwtConfig = require("../../config/jwt.config");
 const UserModel = require("../../models/User.model");
-const AuthService = require("../../services/AuthService");
+const AuthService = require("../../services/auth.service");
 const ApiResponse = require("../../utils/ApiResponse");
 const { asyncHandler } = require("../../utils/asyncHandler");
-const { isDevelopment } = require("../../utils/constant");
+const { isDevelopment } = require("../../utils/constants/constant");
 
 class AuthController {
   setTokenCookie(res, tokenName, tokenValue, expiresIn) {
@@ -23,10 +23,7 @@ class AuthController {
 
   login = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
-    const { userId, roleId, accessToken } = await this.authservice.login(
-      email,
-      password
-    );
+    const { userId, roleId, accessToken } = await this.authservice.login(email, password);
     this.setTokenCookie(res, "x_auth_token", accessToken, jwtConfig.expiresIn);
 
     res.status(200).json(
@@ -64,11 +61,19 @@ class AuthController {
   changePassword = asyncHandler(async (req, res) => {
     const { oldPassword, newPassword } = req.body;
     const { userId } = req.user;
-    const message = await this.authservice.changePassword(
-      userId,
-      oldPassword,
-      newPassword
-    );
+    const message = await this.authservice.changePassword(userId, oldPassword, newPassword);
+    res.status(200).json(new ApiResponse(200, {}, message));
+  });
+
+  forgetPassword = asyncHandler(async (req, res) => {
+    const { email } = req.body;
+    const message = await this.authservice.forgotPassword(email);
+    res.status(200).json(new ApiResponse(200, {}, message));
+  });
+
+  resetPassword = asyncHandler(async (req, res) => {
+    const { token, newPassword } = req.body;
+    const message = await this.authservice.resetPassword(token, newPassword);
     res.status(200).json(new ApiResponse(200, {}, message));
   });
 

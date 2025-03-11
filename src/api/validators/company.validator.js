@@ -17,9 +17,9 @@ const citySchema = z
   .refine(
     (id) => {
       const num = parseInt(id.substring(2), 10);
-      return num >= 1000 && num <= 1729;
+      return num >= 1000 && num <= 1804;
     },
-    { message: "District ID must be between DT1000 and DT1729" }
+    { message: "District ID must be between DT1000 and DT1804" }
   );
 
 const baseCompanySchema = {
@@ -46,32 +46,32 @@ const baseCompanySchema = {
     .trim()
     .email("Invalid email format")
     .max(100, "Email address must not exceed 100 characters"),
-  contact: z
-    .number()
-    .int()
-    .gte(
-      6000000000,
-      "Contact number must be a valid 10-digit Indian number starting with 6-9"
-    )
-    .lte(
-      9999999999,
-      "Contact number must be a valid 10-digit Indian number starting with 6-9"
-    ),
-
   stateId: stateSchema,
   cityId: citySchema,
 
+  contact: z
+    .union([z.string(), z.number()])
+    .transform((val) => String(val).trim())
+    .refine((val) => /^[6-9]\d{9}$/.test(val), {
+      message: "Contact number must be a valid 10-digit Indian number starting with 6-9",
+    }),
+
   pincode: z
-    .number()
-    .int()
-    .gte(100000, "Pin Code must be a valid 6-digit number")
-    .lte(999999, "Pin Code must be a valid 6-digit number"),
+    .union([z.string(), z.number()])
+    .transform((val) => String(val).trim())
+    .refine((val) => /^\d{6}$/.test(val), {
+      message: "Pin Code must be a valid 6-digit number",
+    }),
+
+  stateId: stateSchema,
+  cityId: citySchema,
 
   IFSC: z
     .string()
     .trim()
     .regex(/^[A-Z]{4}0[A-Z0-9]{6}$/, "Invalid IFSC code format")
-    .length(11, "IFSC code must be exactly 11 characters long"),
+    .length(11, "IFSC code must be exactly 11 characters long")
+    .optional(),
 
   blocked: z
     .string()
@@ -80,9 +80,7 @@ const baseCompanySchema = {
 
   status: z.enum(["pending", "accept", "rejected"]).default("pending"),
 
-  loanId: z
-    .array(z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid ID format"))
-    .optional(),
+  loanId: z.array(z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid ID format")).optional(),
 
   gstNumber: z
     .string()
@@ -113,10 +111,7 @@ const createCompanySchema = z.object(baseCompanySchema);
 
 const updateCompanySchema = z.object({
   ...Object.fromEntries(
-    Object.entries(baseCompanySchema).map(([key, schema]) => [
-      key,
-      schema.optional(),
-    ])
+    Object.entries(baseCompanySchema).map(([key, schema]) => [key, schema.optional()])
   ),
   frenchiseId: z.string().trim().min(6, "frenchiseId is required"),
 });

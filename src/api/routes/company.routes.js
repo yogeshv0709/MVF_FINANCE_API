@@ -1,9 +1,9 @@
 const express = require("express");
-const isAdmin = require("../middleware/isAdmin");
 const CompanyController = require("../controller/company.controller");
-const validate = require("../middleware/zodValidate");
-const companySchema = require("../validators/companyValidator");
-const { authMiddleware } = require("../middleware/authMiddleware");
+const isAdmin = require("../middleware/isAdmin.middleware");
+const validate = require("../middleware/zod.middleware");
+const companySchema = require("../validators/company.validator");
+const { authMiddleware } = require("../middleware/auth.middleware");
 
 const router = express.Router();
 
@@ -16,12 +16,7 @@ router.post(
   CompanyController.addCompany
 );
 // @get @admin =>get all companies
-router.post(
-  "/getAllFrencise",
-  authMiddleware,
-  isAdmin,
-  CompanyController.getCompanies
-);
+router.post("/getAllFrencise", authMiddleware, isAdmin, CompanyController.getCompanies);
 
 //@get @admin or @own company => get company
 router.post(

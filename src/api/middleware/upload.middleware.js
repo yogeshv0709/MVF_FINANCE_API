@@ -23,13 +23,12 @@ const fileFilter = (req, file, cb) => {
     "image/jpeg",
     "image/png",
     "application/pdf",
+    "image/svg+xml",
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // .xlsx
     "application/vnd.ms-excel", // .xls
     "text/csv", // .csv
   ];
-  allowedTypes.includes(file.mimetype)
-    ? cb(null, true)
-    : cb(new Error("Invalid file type"), false);
+  allowedTypes.includes(file.mimetype) ? cb(null, true) : cb(new Error("Invalid file type"), false);
 };
 
 const upload = multer({ storage, fileFilter });

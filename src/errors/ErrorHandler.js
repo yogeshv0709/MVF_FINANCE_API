@@ -1,4 +1,4 @@
-const { isDevelopment } = require("../utils/constant");
+const { isDevelopment } = require("../utils/constants/constant");
 const ApiError = require("./ApiErrors");
 
 const errorHandler = (err, req, res, next) => {

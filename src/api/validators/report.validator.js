@@ -1,13 +1,9 @@
 const { z } = require("zod");
 
-const objectIdSchema = z.string().refine((id) => /^[0-9a-fA-F]{24}$/.test(id), {
-  message: "Invalid MongoDB ObjectId",
-});
-
 const reportSchema = z.object({
   imageDescriptions: z.array(
     z.object({
-      imagedescription: z
+      imageDescriptions: z
         .string()
         .min(5, "Description must be at least 5 characters")
         .max(500, "Description must not exceed 500 characters")
@@ -17,6 +13,8 @@ const reportSchema = z.object({
   ),
   weatherForecastFile: z.string().optional(),
   excel: z.string().optional(),
+  schedule_advisory1: z.string().optional(),
+  schedule_advisory2: z.string().optional(),
   description: z.string().optional(),
   requestId: z.string().uuid(),
 });

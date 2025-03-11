@@ -1,10 +1,13 @@
 const jwt = require("jsonwebtoken");
 const jwtConfig = require("../config/jwt.config");
 const ApiError = require("../errors/ApiErrors");
-const { comparePassword, hashPassword } = require("../utils/password.util");
+const { comparePassword, hashPassword } = require("../utils/helpers/password.util");
 const CompanyModel = require("../models/Company.model");
-const { userType } = require("../utils/constant");
+const { userType, FRONTEND_URL } = require("../utils/constants/constant");
 const RoleModel = require("../models/Role.model");
+const { sendResetPasswordMail } = require("../utils/helpers/email.util");
+const UserModel = require("../models/User.model");
+const crypto = require("crypto");
 require("../models/Permission.model");
 
 class AuthService {
@@ -21,11 +24,7 @@ class AuthService {
     const refreshTokenOptions = { expiresIn: jwtConfig.refreshExpiresIn };
 
     const accessToken = jwt.sign(payload, secret, accessTokenOptions);
-    const refreshToken = jwt.sign(
-      refreshTokenPayload,
-      secret,
-      refreshTokenOptions
-    );
+    const refreshToken = jwt.sign(refreshTokenPayload, secret, refreshTokenOptions);
 
     return { accessToken, refreshToken };
   }
@@ -60,9 +59,7 @@ class AuthService {
         const staffId = company.frenchiseId;
         const blocked = company.blocked;
         const contact = company.contact;
-        const roleId = await RoleModel.findOne({ name }).populate(
-          "isPermission"
-        );
+        const roleId = await RoleModel.findOne({ name }).populate("isPermission");
         const { password: _, token: hideIt, ...rest } = user.toObject();
         const updatedRest = { ...rest, staffId, blocked, contact };
 
@@ -133,10 +130,7 @@ class AuthService {
       throw new ApiError(401, "Old password is incorrect");
     }
     if (oldPassword === newPassword) {
-      throw new ApiError(
-        400,
-        "New password must be different from old password"
-      );
+      throw new ApiError(400, "New password must be different from old password");
     }
 
     const hashedNewPassword = await hashPassword(newPassword);
@@ -151,6 +145,39 @@ class AuthService {
   //     { $unset: { refreshToken: 1 } }
   //   );
   // }
+  async forgotPassword(email) {
+    const user = await UserModel.findOne({ email });
+    if (!user) throw new ApiError(400, "User not found");
+
+    // Generate a reset token
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordExpires = new Date(Date.now() + 15 * 60 * 1000); // 1-hour expiry
+    await user.save();
+
+    const resetUrl = `${FRONTEND_URL}/api/v1/auth/reset-password?token=${resetToken}`;
+    await sendResetPasswordMail(user.email, resetUrl);
+
+    return "Reset password email sent";
+  }
+
+  async resetPassword(token, newPassword) {
+    const user = await UserModel.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: new Date() }, // Check if token is not expired
+    });
+
+    if (!user) throw new ApiError(400, "Invalid or expired token");
+
+    user.password = await hashPassword(newPassword);
+    user.resetPasswordToken = null;
+    user.resetPasswordExpires = null;
+    await user.save();
+
+    // await sendUpdatePasswordMail(user.email);
+
+    return "Password reset successful";
+  }
 }
 
 module.exports = AuthService;
