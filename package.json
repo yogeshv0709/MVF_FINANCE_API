@@ -5,8 +5,7 @@
   "type": "commonjs",
   "scripts": {
     "start": "node --env-file=.env src/index.js",
-    "dev": "node --watch --env-file=.env src/index.js",
-    "prepare": "husky"
+    "dev": "node --watch --env-file=.env src/index.js"
   },
   "keywords": [],
   "author": "",
@@ -32,6 +31,6 @@
     "prettier": "^3.5.3"
   },
   "lint-staged": {
-    "*": "prettier --write"
+    "*.{js,json,ts}": "prettier --write"
   }
 }
