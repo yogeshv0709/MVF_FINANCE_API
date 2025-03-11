@@ -20,7 +20,7 @@ const processDescriptions = (req, res, next) => {
         if (!descriptions[index]) {
           descriptions[index] = { imageDescriptions: "", images: null };
         }
-        descriptions[index].images = file.path; // Store file URL
+        descriptions[index].images = file.location;
       });
     }
     req.body.imageDescriptions = descriptions;
