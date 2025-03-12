@@ -152,10 +152,12 @@ class AuthService {
     // Generate a reset token
     const resetToken = crypto.randomBytes(32).toString("hex");
     user.resetPasswordToken = resetToken;
-    user.resetPasswordExpires = new Date(Date.now() + 15 * 60 * 1000); // 1-hour expiry
+    user.resetPasswordExpires = new Date(Date.now() + 15 * 60 * 1000);
     await user.save();
 
-    const resetUrl = `${FRONTEND_URL}/api/v1/auth/reset-password?token=${resetToken}`;
+    // /verify-forget-token/:id
+    // const resetUrl = `${FRONTEND_URL}/api/v1/auth/reset-password?token=${resetToken}`;
+    const resetUrl = `${FRONTEND_URL}/verify-forget-token/${resetToken}`;
     await sendResetPasswordMail(user.email, resetUrl);
 
     return "Reset password email sent";
@@ -174,7 +176,7 @@ class AuthService {
     user.resetPasswordExpires = null;
     await user.save();
 
-    // await sendUpdatePasswordMail(user.email);
+    // await sendUpdatePasswordMai(user.email);
 
     return "Password reset successful";
   }

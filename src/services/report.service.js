@@ -8,7 +8,11 @@ const { generatePresignedUrl } = require("../utils/helpers/s3UrlGenerator");
 class ReportService {
   static async createReport(data, files) {
     const { imageDescriptions, requestId, description } = data;
-    const farmer = await FarmerCropModel.findOne({ requestId });
+    const farmer = await FarmerCropModel.findOneAndUpdate(
+      { requestId },
+      { status: "accept", lastReportDate: new Date() },
+      { new: true }
+    );
     if (!farmer) {
       throw new Error("Invalid requestId.");
     }
@@ -38,10 +42,6 @@ class ReportService {
     });
 
     await report.save();
-
-    farmer.status = "accept";
-    farmer.lastReportDate = new Date();
-    await farmer.save();
 
     return report;
   }
@@ -88,8 +88,6 @@ class ReportService {
 
       reports = await Report.find({ farmerId })
         .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit)
         .populate("farmerId submittedBy", "farmerName contactNumber email");
     } else {
       throw new ApiError(403, "Access denied");
@@ -129,12 +127,7 @@ class ReportService {
       })
     );
 
-    return {
-      reports: reportsWithUrls,
-      totalReports,
-      currentPage: page,
-      totalPages: Math.ceil(totalReports / limit),
-    };
+    return reportsWithUrls;
   }
 }
 

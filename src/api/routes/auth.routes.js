@@ -25,10 +25,10 @@ router
 
 // router.route("/logout").get(authMiddleware, authController.logout);
 
-router.route("/forget-password").post(validate(UserSchemaSendEmail), authController.forgetPassword);
+router.route("/resetToken").post(validate(UserSchemaSendEmail), authController.forgetPassword);
 
 router
-  .route("/reset-password")
+  .route("/verifyEmailToken")
   .post(validate(UserSchemaResetPassword), authController.resetPassword);
 
 module.exports = router;

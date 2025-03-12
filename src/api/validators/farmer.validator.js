@@ -96,4 +96,10 @@ const getFarmersCropSchema = z
   })
   .strict();
 
-module.exports = { FarmerCropSchema, getFarmersCropSchema };
+const deleteEnquirySchema = z
+  .object({
+    requestId: z.string().uuid(),
+  })
+  .strict();
+
+module.exports = { FarmerCropSchema, getFarmersCropSchema, deleteEnquirySchema };

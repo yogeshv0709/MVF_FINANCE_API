@@ -30,4 +30,6 @@ router.post(
 // Get all reports (paginated) @access admin will get all and company will get its perticular farmer @requestid in payload
 router.post("/getPreviousReports", authMiddleware, getAllReports);
 
+// router.post("/editReport", authMiddleware, getAllReports);
+
 module.exports = router;

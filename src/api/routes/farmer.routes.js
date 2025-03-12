@@ -1,7 +1,15 @@
 const express = require("express");
-const { addFarmerCrop, getFarmerCrops } = require("../controller/farmer.controller");
+const {
+  addFarmerCrop,
+  getFarmerCrops,
+  deleteFarmerCrops,
+} = require("../controller/farmer.controller");
 const validate = require("../middleware/zod.middleware");
-const { FarmerCropSchema, getFarmersCropSchema } = require("../validators/farmer.validator");
+const {
+  FarmerCropSchema,
+  deleteEnquirySchema,
+  getFarmersCropSchema,
+} = require("../validators/farmer.validator");
 const { authMiddleware } = require("../middleware/auth.middleware");
 const isCompany = require("../middleware/isCompany.middleware");
 
@@ -12,5 +20,7 @@ router.post("/addEnquiry", authMiddleware, isCompany, validate(FarmerCropSchema)
 
 // @access admin=>all company=> company's farmer {"entype":"user"} {"entype":"bank"}
 router.post("/getEnquiry", authMiddleware, validate(getFarmersCropSchema), getFarmerCrops);
+
+router.post("/deleteEnquiry", authMiddleware, validate(deleteEnquirySchema), deleteFarmerCrops);
 
 module.exports = router;

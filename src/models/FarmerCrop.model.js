@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const UserModel = require("./User.model");
 const crypto = require("crypto");
 const CounterModel = require("./Counter.model");
 const CompanyModel = require("./Company.model");
@@ -51,7 +50,6 @@ const FarmerCropSchema = new mongoose.Schema(
 );
 
 FarmerCropSchema.pre("save", async function (next) {
-  // Fetch the staffId from the User model before saving
   try {
     if (!this.requestId) {
       this.requestId = crypto.randomUUID(); // Generate unique requestId
@@ -66,9 +64,9 @@ FarmerCropSchema.pre("save", async function (next) {
     }
     const company = await CompanyModel.findById(this.companyId);
     if (company && company.frenchiseId) {
-      this.userId = company.frenchiseId; // Store `staffId` instead of ObjectId
+      this.userId = company.frenchiseId;
     } else {
-      return next(new Error("Invalid userId: No staffId found."));
+      return next(new Error("Invalid userId: No frenchiseId found."));
     }
   } catch (error) {
     return next(error);

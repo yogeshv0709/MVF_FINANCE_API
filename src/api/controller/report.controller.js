@@ -10,7 +10,7 @@ const submitReport = asyncHandler(async (req, res) => {
 
   const report = await ReportService.createReport(req.body, req.files);
 
-  logger.info("Report submitted successfully", { report });
+  logger.info("Report submitted successfully", { report: report._id });
   res.status(200).json(new ApiResponse(200, report));
 });
 
@@ -23,7 +23,7 @@ const getAllReports = asyncHandler(async (req, res) => {
 
   const reportsData = await ReportService.getAllReports(user, req.body, page, limit);
 
-  logger.info("Reports fetched successfully", { reportsData });
+  logger.info("Reports fetched successfully");
   res.status(200).json(new ApiResponse(200, reportsData));
 });
 

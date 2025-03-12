@@ -5,6 +5,10 @@ const Farmer = require("../models/FarmerCrop.model");
 const StateModel = require("../models/State.model");
 const { checkCompanyAccess } = require("../utils/authHelper");
 const { userType } = require("../utils/constants/constant");
+const mongoose = require("mongoose");
+const { logger } = require("../utils/helpers/logger.utils");
+const { deleteFileFromS3 } = require("../utils/helpers/s3Fileops");
+const Report = require("../models/Report.model");
 
 class FarmerCropService {
   // Create a new Farmer Crop entry
@@ -55,8 +59,6 @@ class FarmerCropService {
 
       farmerCrops = await Farmer.find()
         .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit)
         .populate("state")
         .populate("district")
         .populate("companyId", "firmName");
@@ -84,8 +86,6 @@ class FarmerCropService {
         );
         const farmers = await Farmer.find({ companyId: company._id })
           .sort({ createdAt: -1 })
-          .skip(skip)
-          .limit(limit)
           .populate("state")
           .populate("district")
           .populate("companyId", "firmName")
@@ -110,15 +110,84 @@ class FarmerCropService {
     return farmerCrops;
   }
 
-  static async getFarmerCropById(farmerId) {
-    const farmerCrop = await Farmer.findById(farmerId);
-    if (!checkCompanyAccess) {
-      throw new ApiError(403, "Unauthorized access");
+  static async deleteFarmerCrops(user, requestId) {
+    const session = await mongoose.startSession(); // Start transaction
+    session.startTransaction();
+
+    try {
+      const farmerCrop = await Farmer.findOne({ requestId }).populate("companyId").session(session);
+      if (!farmerCrop) {
+        throw new ApiError(404, "RequestId not found");
+      }
+
+      const company = farmerCrop.companyId;
+      if (!checkCompanyAccess(user, company)) {
+        throw new ApiError(403, "Unauthorized access");
+      }
+
+      const reports = await Report.find({ farmerId: farmerCrop._id }).session(session);
+      if (reports.length > 0) {
+        logger.info(`Found ${reports.length} reports to delete for farmer ${requestId}`);
+
+        // Collect all S3 file URLs from reports
+        const s3Urls = [];
+        reports.forEach((report) => {
+          if (report.images && report.images.length > 0) {
+            report.images.forEach((image) => {
+              if (image.images) s3Urls.push(image.images);
+            });
+          }
+          if (report.weatherReport) s3Urls.push(report.weatherReport);
+          if (report.excel) s3Urls.push(report.excel);
+          if (report.schedule_advisory1) s3Urls.push(report.schedule_advisory1);
+          if (report.schedule_advisory2) s3Urls.push(report.schedule_advisory2);
+        });
+        // Delete reports from the database
+        await Report.deleteMany({ farmerId: farmerCrop._id }).session(session);
+        logger.info(`Deleted ${reports.length} reports for farmer ${requestId}`);
+
+        // Step 3: Delete media files from S3
+        if (s3Urls.length > 0) {
+          logger.info(`Deleting ${s3Urls.length} S3 files for farmer ${requestId}`);
+          await Promise.all(
+            s3Urls.map(async (url) => {
+              try {
+                const deleted = await deleteFileFromS3(url);
+                if (deleted) {
+                  logger.info(`Deleted S3 file: ${url}`);
+                  return true;
+                } else {
+                  logger.warn(`Failed to delete S3 file (might not exist): ${url}`);
+                  return false;
+                }
+              } catch (err) {
+                logger.error(`Error deleting S3 file ${url}:`, err);
+                return false; // Continue despite failure
+              }
+            })
+          );
+        } else {
+          logger.info(`No S3 files found to delete for farmer ${requestId}`);
+        }
+      } else {
+        logger.info(`No reports found for farmer ${requestId}`);
+      }
+      await Farmer.deleteOne({ _id: farmerCrop._id }).session(session);
+      logger.info(`Deleted farmer crop with requestId: ${requestId}`);
+
+      // Commit the transaction
+      await session.commitTransaction();
+      logger.info(`Successfully completed deletion for farmer ${requestId}`);
+
+      return { message: "Farmer and associated data deleted successfully" };
+    } catch (error) {
+      console.log(error);
+      await session.abortTransaction();
+      logger.error(`Error deleting farmer ${requestId}:`, error);
+      throw new ApiError(500, "Failed to delete farmer data");
+    } finally {
+      session.endSession();
     }
-    if (!farmerCrop) {
-      throw new ApiError(404, "Farmer Crop not found");
-    }
-    return farmerCrop;
   }
 }
 

@@ -1,5 +1,6 @@
-// utils/s3FileOps.js
-const s3 = require("../config/s3");
+const { DeleteObjectCommand } = require("@aws-sdk/client-s3");
+const s3Client = require("../../config/s3.config");
+const envVars = require("../../config/server.config");
 
 // Extract S3 key from full S3 URL
 const getS3KeyFromUrl = (url) => {
@@ -15,18 +16,16 @@ const getS3KeyFromUrl = (url) => {
 
 // Delete a file from S3
 const deleteFileFromS3 = async (fileUrl) => {
-  if (!fileUrl) return;
+  if (!fileUrl) return true;
 
   try {
     const key = getS3KeyFromUrl(fileUrl);
+    const command = new DeleteObjectCommand({
+      Bucket: envVars.AWS_S3_BUCKET_NAME,
+      Key: key,
+    });
 
-    await s3
-      .deleteObject({
-        Bucket: process.env.AWS_S3_BUCKET_NAME,
-        Key: key,
-      })
-      .promise();
-
+    await s3Client.send(command);
     console.log(`Successfully deleted file from S3: ${key}`);
     return true;
   } catch (error) {

@@ -7,7 +7,7 @@ class CompanyController {
   static addCompany = asyncHandler(async (req, res) => {
     logger.info("Adding a new company", { body: req.body });
     const company = await CompanyService.addCompany(req.body);
-    logger.info("Company added successfully", { company });
+    logger.info("Company added successfully", { company: company._id });
     res.status(200).json(new ApiResponse(200, company, "Company added successfully"));
   });
 
@@ -16,7 +16,7 @@ class CompanyController {
     const user = req.user;
     logger.info("Fetching company details", { user, frenchiseId });
     const company = await CompanyService.getCompany(user, frenchiseId);
-    logger.info("Company fetched successfully", { company });
+    logger.info("Company fetched successfully", { company: company._id });
     res.status(200).json(new ApiResponse(200, company, "Company fetched successfully"));
   });
 
@@ -24,7 +24,7 @@ class CompanyController {
     const updates = req.body;
     logger.info("Updating company details", { updates });
     const company = await CompanyService.updateCompany(updates);
-    logger.info("Company updated successfully", { company });
+    logger.info("Company updated successfully", { company: company._id });
     res.status(200).json(new ApiResponse(200, company, "Company updated successfully"));
   });
 
@@ -35,7 +35,7 @@ class CompanyController {
 
     logger.info("Fetching list of companies", { page, limit });
     const result = await CompanyService.getCompanies(page, limit);
-    logger.info("Companies fetched successfully", { result });
+    logger.info("Companies fetched successfully");
     res.status(200).json(new ApiResponse(200, result, "Companies fetched successfully"));
   });
 }
