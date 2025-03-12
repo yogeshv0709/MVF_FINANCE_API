@@ -2,6 +2,7 @@ const multer = require("multer");
 const multerS3 = require("multer-s3");
 const envVars = require("../../config/server.config");
 const s3Client = require("../../config/s3.config");
+const { logger } = require("../../utils/helpers/logger.utils");
 
 const fileFilter = (req, file, cb) => {
   const allowedTypes = [
@@ -13,7 +14,14 @@ const fileFilter = (req, file, cb) => {
     "application/vnd.ms-excel", // .xls
     "text/csv", // .csv
   ];
-  allowedTypes.includes(file.mimetype) ? cb(null, true) : cb(new Error("Invalid file type"), false);
+
+  if (allowedTypes.includes(file.mimetype)) {
+    logger.info(`File type allowed: ${file.mimetype}`);
+    cb(null, true);
+  } else {
+    logger.warn(`Invalid file type: ${file.mimetype}`);
+    cb(new Error("Invalid file type"), false);
+  }
 };
 
 const s3Storage = multerS3({
@@ -32,7 +40,9 @@ const s3Storage = multerS3({
         schedule_advisory1: "advisories",
         schedule_advisory2: "advisories",
       }[file.fieldname] || "misc";
+
     const fileKey = `${folder}/${requestId}/${Date.now()}-${file.originalname}`;
+    logger.info(`Uploading file: ${file.originalname} to S3 as ${fileKey}`);
     cb(null, fileKey);
   },
 });

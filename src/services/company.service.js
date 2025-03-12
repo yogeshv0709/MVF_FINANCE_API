@@ -55,7 +55,7 @@ class CompanyService {
       });
       await company.save({ session });
 
-      await session.commitTransaction(); // Commit if everything is successful
+      await session.commitTransaction();
       // send password
       // try {
       //   await sendPasswordMail(email, generatedPassword);

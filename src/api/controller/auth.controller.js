@@ -4,6 +4,7 @@ const AuthService = require("../../services/auth.service");
 const ApiResponse = require("../../utils/ApiResponse");
 const { asyncHandler } = require("../../utils/asyncHandler");
 const { isDevelopment } = require("../../utils/constants/constant");
+const { logger } = require("../../utils/helpers/logger.utils");
 
 class AuthController {
   setTokenCookie(res, tokenName, tokenValue, expiresIn) {
@@ -22,10 +23,12 @@ class AuthController {
   }
 
   login = asyncHandler(async (req, res) => {
+    logger.info("Login attempt", { email: req.body.email });
     const { email, password } = req.body;
     const { userId, roleId, accessToken } = await this.authservice.login(email, password);
     this.setTokenCookie(res, "x_auth_token", accessToken, jwtConfig.expiresIn);
 
+    logger.info("User logged in successfully", { userId: userId._id });
     res.status(200).json(
       new ApiResponse(200, {
         userId,
@@ -37,6 +40,7 @@ class AuthController {
   });
 
   staffDetail = asyncHandler(async (req, res) => {
+    logger.info("Fetching staff details", { userId: req.user?.userId });
     const user = req.user;
     const userDetails = await this.authservice.getAuthDetails(user);
     res.status(200).json(new ApiResponse(200, userDetails));
@@ -59,21 +63,27 @@ class AuthController {
   // });
 
   changePassword = asyncHandler(async (req, res) => {
+    logger.info("Password change attempt", { userId: req.user?.userId });
     const { oldPassword, newPassword } = req.body;
     const { userId } = req.user;
     const message = await this.authservice.changePassword(userId, oldPassword, newPassword);
+    logger.info("Password changed successfully", { userId });
     res.status(200).json(new ApiResponse(200, {}, message));
   });
 
   forgetPassword = asyncHandler(async (req, res) => {
+    logger.info("Forget password request", { email: req.body.email });
     const { email } = req.body;
     const message = await this.authservice.forgotPassword(email);
     res.status(200).json(new ApiResponse(200, {}, message));
   });
 
   resetPassword = asyncHandler(async (req, res) => {
+    logger.info("Reset password request", { token: req.body.token });
+
     const { token, newPassword } = req.body;
     const message = await this.authservice.resetPassword(token, newPassword);
+    logger.info("Password reset successfully");
     res.status(200).json(new ApiResponse(200, {}, message));
   });
 

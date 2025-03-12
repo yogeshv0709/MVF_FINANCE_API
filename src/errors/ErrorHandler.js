@@ -1,28 +1,35 @@
 const { isDevelopment } = require("../utils/constants/constant");
 const ApiError = require("./ApiErrors");
+const { logger } = require("../utils/helpers/logger.utils"); // Ensure logger is correctly imported
 
 const errorHandler = (err, req, res, next) => {
-  console.log(err);
+  logger.error("Error occurred", {
+    method: req.method,
+    path: req.originalUrl,
+    errorMessage: err.message,
+    stack: isDevelopment ? err.stack : undefined,
+  });
+
   if (err instanceof ApiError) {
-    res.status(err.statusCode).json({
+    return res.status(err.statusCode).json({
       success: false,
       message: err.message,
       errors: err.errors,
       data: err.data,
       stack: isDevelopment ? err.stack : undefined,
     });
-    return;
   }
+
   if (err instanceof SyntaxError) {
-    res.status(400).json({
+    return res.status(400).json({
       success: false,
       message: "Malformed JSON",
       errors: [],
       data: null,
       stack: isDevelopment ? err.stack : undefined,
     });
-    return;
   }
+
   res.status(500).json({
     success: false,
     message: "Internal Server Error",

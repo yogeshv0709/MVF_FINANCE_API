@@ -6,6 +6,7 @@ const errorHandler = require("./errors/ErrorHandler");
 const cors = require("cors");
 const envVars = require("./config/server.config");
 const { constants } = require("./utils/constants/constant");
+const { morganMiddleware } = require("./utils/helpers/logger.utils");
 
 // @routes
 const companyRoute = require("./api/routes/company.routes");
@@ -21,14 +22,16 @@ server.use(helmet());
 server.use(express.json({ limit: constants.JSON_LIMIT }));
 server.use(cors());
 server.use(cookieParser(envVars.COOKIE_SECRET));
+server.use(morganMiddleware);
+
 server.use(express.urlencoded({ extended: true, limit: constants.JSON_LIMIT }));
-server.use("/uploads", express.static("uploads"));
 
 server.use("/api/v1", authRoute);
 server.use("/api/v1", dashboardRoute);
 server.use("/api/v1", companyRoute);
 server.use("/api/v1", farmerRoute);
 server.use("/api/v1", reportRoute);
+
 server.use("/api/v1", stateRoute);
 
 server.use(notFound);
