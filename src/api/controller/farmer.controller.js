@@ -18,7 +18,7 @@ const getFarmerCrops = asyncHandler(async (req, res) => {
   const user = req.user;
   page = parseInt(page) || 1;
   limit = parseInt(limit) || 10;
-  logger.info("Fetching farmer crops", { user, data, page, limit });
+  logger.info("Fetching farmer crops", { user: user.userId });
   const result = await FarmerCropService.getFarmerCrops(user, data, page, limit);
   logger.info("Farmer crops fetched successfully");
   res.status(200).json(new ApiResponse(200, result));
@@ -28,8 +28,8 @@ const deleteFarmerCrops = asyncHandler(async (req, res) => {
   const { requestId } = req.body;
   const user = req.user;
   logger.info("Fetching farmer crop by ID", { requestId });
-  const farmerCrop = await FarmerCropService.deleteFarmerCrops(user, requestId);
-  logger.info("Farmer crop fetched successfully", { farmerCrop: farmerCrop._id });
+  await FarmerCropService.deleteFarmerCrops(user, requestId);
+  logger.info("Farmer crop deleted successfully");
   res.status(200).json(new ApiResponse(200, {}, "Farmer Deleted "));
 });
 

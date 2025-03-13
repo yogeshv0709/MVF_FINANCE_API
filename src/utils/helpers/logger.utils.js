@@ -9,7 +9,7 @@ const logFormat = winston.format.combine(
   winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
   winston.format.errors({ stack: true }),
   winston.format.splat(),
-  winston.format.json({ space: 2 })
+  isDevelopment ? winston.format.json({ space: 2 }) : winston.format.json()
 );
 
 const levels = {

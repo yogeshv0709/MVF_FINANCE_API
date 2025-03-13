@@ -5,9 +5,10 @@ const { comparePassword, hashPassword } = require("../utils/helpers/password.uti
 const CompanyModel = require("../models/Company.model");
 const { userType, FRONTEND_URL } = require("../utils/constants/constant");
 const RoleModel = require("../models/Role.model");
-const { sendResetPasswordMail } = require("../utils/helpers/email.util");
+const { sendResetPasswordMail, sendUpdatePasswordMail } = require("../utils/helpers/email.util");
 const UserModel = require("../models/User.model");
 const crypto = require("crypto");
+const { checkCompanyAccess } = require("../utils/authHelper");
 require("../models/Permission.model");
 
 class AuthService {
@@ -101,6 +102,27 @@ class AuthService {
     }
     return response;
   }
+  async editStaffDetail(user, data) {
+    const { frenchiseId, contact, name } = data;
+
+    if (!user) {
+      throw new ApiError(401, "Unauthorized");
+    }
+    const company = await CompanyModel.findOne({ frenchiseId });
+    if (!company) {
+      throw new ApiError(400, "No company found");
+    }
+    if (!checkCompanyAccess(user, company)) {
+      throw new ApiError(403, "Access denied");
+    }
+    const response = await CompanyModel.findOneAndUpdate(
+      { frenchiseId },
+      { $set: { contact, name } },
+      { new: true }
+    );
+
+    return response;
+  }
 
   // async refreshToken(token) {
   //   const decoded = jwt.verify(token, jwtConfig.secret);
@@ -176,7 +198,7 @@ class AuthService {
     user.resetPasswordExpires = null;
     await user.save();
 
-    // await sendUpdatePasswordMai(user.email);
+    await sendUpdatePasswordMail(user.email);
 
     return "Password reset successful";
   }

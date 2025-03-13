@@ -10,8 +10,7 @@ const FarmerCropSchema = z
       .max(100, "Farmer name must not exceed 100 characters"),
     contact: z
       .string()
-      .min(10, "Contact number must be 10 digits")
-      .max(10, "Contact number must be 10 digits")
+      .length(10, "Contact number must be exactly 10 digits")
       .regex(/^\d+$/, "Contact number must contain only digits"),
     email: z.string().max(100).optional(),
     address: z.string().max(255, "Address must not exceed 255 characters").optional(),
@@ -19,6 +18,7 @@ const FarmerCropSchema = z
       .string()
       .length(12, "Aadhar number must be exactly 12 digits")
       .regex(/^\d+$/, "Aadhar number must contain only digits")
+      .or(z.literal("").optional())
       .optional(),
     state: stateSchema,
     district: citySchema,
@@ -27,8 +27,7 @@ const FarmerCropSchema = z
     pinCode: z
       .string()
       .length(6, "Pin code must be exactly 6 digits")
-      .regex(/^\d+$/, "Pin code must contain only digits")
-      .optional(),
+      .regex(/^\d+$/, "Pin code must contain only digits"),
 
     // Crop Details
     cropName: z
@@ -57,11 +56,7 @@ const FarmerCropSchema = z
       .optional(),
 
     // Field Details
-    fieldName: z
-      .string()
-      .min(1, "Field name is required")
-      .max(100, "Field name must not exceed 100 characters")
-      .optional(),
+    fieldName: z.string().max(100, "Field name must not exceed 100 characters").optional(),
 
     area: z
       .string()
@@ -98,7 +93,7 @@ const getFarmersCropSchema = z
 
 const deleteEnquirySchema = z
   .object({
-    requestId: z.string().uuid(),
+    requestId: z.string().uuid({ message: "Invalid requestId. It must be a valid UUID." }),
   })
   .strict();
 

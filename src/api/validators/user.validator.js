@@ -41,10 +41,30 @@ const UserSchemaResetPassword = z
   })
   .strict();
 
+const updateCompanyStaff = z
+  .object({
+    frenchiseId: z.string().trim().min(6, "frenchiseId is required"),
+    contact: z
+      .union([z.string(), z.number()])
+      .transform((val) => String(val).trim())
+      .refine((val) => /^[6-9]\d{9}$/.test(val), {
+        message: "Contact number must be a valid 10-digit Indian number starting with 6-9",
+      })
+      .optional(),
+    name: z
+      .string()
+      .trim()
+      .min(2, "name must be at least 2 characters long")
+      .max(100, "name must not exceed 100 characters")
+      .optional(),
+  })
+  .strict();
+
 module.exports = {
   LoginSchema,
   RegisterSchema,
   changePasswordSchema,
   UserSchemaSendEmail,
   UserSchemaResetPassword,
+  updateCompanyStaff,
 };

@@ -7,6 +7,7 @@ const {
   changePasswordSchema,
   UserSchemaSendEmail,
   UserSchemaResetPassword,
+  updateCompanyStaff,
 } = require("../validators/user.validator");
 
 const router = express.Router();
@@ -18,6 +19,10 @@ router.route("/login").post(validate(LoginSchema), authController.login);
 
 //! @get
 router.route("/staffDetail").post(authMiddleware, authController.staffDetail);
+
+router
+  .route("/editstaff")
+  .post(authMiddleware, validate(updateCompanyStaff), authController.editStaffDetail);
 
 router
   .route("/changePassword")

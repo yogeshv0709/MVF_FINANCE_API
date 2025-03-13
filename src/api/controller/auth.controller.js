@@ -46,6 +46,14 @@ class AuthController {
     res.status(200).json(new ApiResponse(200, userDetails));
   });
 
+  editStaffDetail = asyncHandler(async (req, res) => {
+    logger.info("Fetching staff details", { userId: req.user?.userId });
+    const user = req.user;
+    const data = req.body;
+    const userDetails = await this.authservice.editStaffDetail(user, data);
+    res.status(200).json(new ApiResponse(200, userDetails));
+  });
+
   // refresh = asyncHandler(async (req, res) => {
   //   const token = req.signedCookies.refreshToken;
   //   const { accessToken, refreshToken } = await this.authservice.refreshToken(

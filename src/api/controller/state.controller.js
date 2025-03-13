@@ -8,7 +8,7 @@ const { logger } = require("../../utils/helpers/logger.utils");
 const getAllState = asyncHandler(async (req, res) => {
   logger.info("Fetching all states");
   const data = await StateModel.find();
-  logger.info("States retrieved successfully", { data });
+  logger.info("States retrieved successfully");
   res.status(200).json(new ApiResponse(200, data, "States retrieved successfully"));
 });
 
@@ -28,7 +28,7 @@ const getAllDistrict = asyncHandler(async (req, res) => {
     throw new ApiError(404, "No districts found for the given stateId");
   }
 
-  logger.info("Districts retrieved successfully", { data });
+  logger.info("Districts retrieved successfully");
   res.status(200).json(new ApiResponse(200, data, "Districts retrieved successfully"));
 });
 

@@ -8,6 +8,7 @@ const RoleModel = require("../models/Role.model");
 const StateModel = require("../models/State.model");
 const StateDistrict = require("../models/District.model");
 const { checkCompanyAccess } = require("../utils/authHelper");
+const { sendPasswordMail } = require("../utils/helpers/email.util");
 
 class CompanyService {
   static async addCompany(data) {
@@ -57,11 +58,7 @@ class CompanyService {
 
       await session.commitTransaction();
       // send password
-      // try {
-      //   await sendPasswordMail(email, generatedPassword);
-      // } catch (mailError) {
-      //   console.error("Failed to send password email:", mailError);
-      // }
+      await sendPasswordMail(email, generatedPassword);
 
       return company;
     } catch (error) {
@@ -128,11 +125,10 @@ class CompanyService {
     };
 
     // Update the found company
-    const updatedCompany = await Company.findByIdAndUpdate(
-      company._id, // Use the actual ObjectId
-      finalUpdates,
-      { new: true, runValidators: true }
-    ).populate("stateId cityId");
+    const updatedCompany = await Company.findByIdAndUpdate(company._id, finalUpdates, {
+      new: true,
+      runValidators: true,
+    }).populate("stateId cityId");
 
     return updatedCompany;
   }

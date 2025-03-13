@@ -34,7 +34,6 @@ const FarmerCropSchema = new mongoose.Schema(
 
     companyId: {
       type: mongoose.Types.ObjectId,
-      require: true,
       ref: "Company",
     },
     userId: { type: String },
@@ -54,6 +53,7 @@ FarmerCropSchema.pre("save", async function (next) {
     if (!this.requestId) {
       this.requestId = crypto.randomUUID(); // Generate unique requestId
     }
+
     if (!this.fieldId) {
       const counter = await CounterModel.findOneAndUpdate(
         { name: "fieldId" },
@@ -62,11 +62,15 @@ FarmerCropSchema.pre("save", async function (next) {
       );
       this.fieldId = `FIELD_${1000 + counter.value}`;
     }
-    const company = await CompanyModel.findById(this.companyId);
-    if (company && company.frenchiseId) {
-      this.userId = company.frenchiseId;
-    } else {
-      return next(new Error("Invalid userId: No frenchiseId found."));
+
+    // Only fetch userId if it's missing
+    if (!this.userId) {
+      const company = await CompanyModel.findById(this.companyId);
+      if (company && company.frenchiseId) {
+        this.userId = company.frenchiseId;
+      } else {
+        return next(new Error("Invalid userId: No frenchiseId found."));
+      }
     }
   } catch (error) {
     return next(error);

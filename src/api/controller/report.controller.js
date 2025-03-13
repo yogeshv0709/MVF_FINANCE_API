@@ -4,7 +4,6 @@ const { asyncHandler } = require("../../utils/asyncHandler");
 const { logger } = require("../../utils/helpers/logger.utils");
 
 // Create a new report
-
 const submitReport = asyncHandler(async (req, res) => {
   logger.info("Submitting report", { requestBody: req.body, files: req.files });
 
