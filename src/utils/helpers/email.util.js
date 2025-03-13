@@ -1,5 +1,6 @@
 const nodemailer = require("nodemailer");
 const envVars = require("../../config/server.config");
+const { logger } = require("./logger.utils");
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -71,9 +72,6 @@ async function sendResetPasswordMail(email, resetUrl) {
     logger.error(`Error sending reset password  email`, error);
   }
 }
-
-const nodemailer = require("nodemailer");
-const { logger } = require("./logger.utils");
 
 async function sendUpdatePasswordMail(email) {
   try {
