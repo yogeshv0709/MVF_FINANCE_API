@@ -18,7 +18,7 @@ const getFarmerCrops = asyncHandler(async (req, res) => {
   const user = req.user;
   page = parseInt(page) || 1;
   limit = parseInt(limit) || 10;
-  logger.info("Fetching farmer crops", { user: user.userId });
+  logger.info("Fetching farmer crops", { user: user.userId, reqBody: req.body });
   const result = await FarmerCropService.getFarmerCrops(user, data, page, limit);
   logger.info("Farmer crops fetched successfully");
   res.status(200).json(new ApiResponse(200, result));

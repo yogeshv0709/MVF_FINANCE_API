@@ -47,10 +47,11 @@ class AuthController {
   });
 
   editStaffDetail = asyncHandler(async (req, res) => {
-    logger.info("Fetching staff details", { userId: req.user?.userId });
+    logger.info("Fetching staff details for edit", { userId: req.user?.userId });
     const user = req.user;
     const data = req.body;
     const userDetails = await this.authservice.editStaffDetail(user, data);
+    logger.info("staff detail edit success", { userId: req.user?.userId });
     res.status(200).json(new ApiResponse(200, userDetails));
   });
 

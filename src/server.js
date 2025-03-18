@@ -33,7 +33,6 @@ server.use("/api/v1", companyRoute);
 server.use("/api/v1", farmerRoute);
 server.use("/api/v1", reportRoute);
 server.use("/api/v1", urlRoute);
-
 server.use("/api/v1", stateRoute);
 
 server.use(notFound);

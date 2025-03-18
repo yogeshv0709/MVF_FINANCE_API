@@ -41,7 +41,8 @@ const s3Storage = multerS3({
         schedule_advisory2: "advisories",
       }[file.fieldname] || "misc";
 
-    const fileKey = `${folder}/${requestId}/${Date.now()}-${file.originalname}`;
+    const safeFileName = encodeURIComponent(file.originalname);
+    const fileKey = `${folder}/${requestId}/${Date.now()}-${safeFileName}`;
     logger.info(`Uploading file: ${file.originalname} to S3 as ${fileKey}`);
     cb(null, fileKey);
   },

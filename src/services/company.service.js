@@ -26,7 +26,6 @@ class CompanyService {
 
       // Generate and hash password
       const generatedPassword = await generateStrongPassword();
-      console.log(generatedPassword); //TODO: REMOVE THIS
       const hashedPassword = await hashPassword(generatedPassword);
       const roleId = await RoleModel.findOne({ roleId: "R1001" }); //Look at Role Model it's hardcoded
       // Create user
@@ -82,7 +81,6 @@ class CompanyService {
   }
 
   static async getCompany(user, frenchiseId) {
-    console.log(user);
     const company = await Company.findOne({ frenchiseId })
       .populate("stateId", "stateId")
       .populate("cityId", "districtId");

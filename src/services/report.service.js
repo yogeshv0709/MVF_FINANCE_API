@@ -3,7 +3,18 @@ const CompanyModel = require("../models/Company.model");
 const FarmerCropModel = require("../models/FarmerCrop.model");
 const Report = require("../models/Report.model");
 const { userType } = require("../utils/constants/constant");
+const { sendWhatsAppMessage } = require("../utils/helpers/sendWhatsapp.util");
 const { generatePresignedUrl } = require("../utils/helpers/s3UrlGenerator");
+const PDFDocument = require("pdfkit");
+const fs = require("fs");
+const {
+  addDocumentHeader,
+  addReportDetails,
+  addImagesSection,
+  addSummarySection,
+  addDocumentFooter,
+} = require("../utils/helpers/pdf.utils");
+const { logger } = require("../utils/helpers/logger.utils");
 
 class ReportService {
   static async createReport(data, files) {
@@ -72,6 +83,7 @@ class ReportService {
       if (!company) {
         throw new ApiError(404, "Company not found for the user");
       }
+      ome;
 
       const farmers = await FarmerCropModel.find({
         companyId: company._id,
@@ -128,6 +140,103 @@ class ReportService {
     );
 
     return reportsWithUrls;
+  }
+
+  static async notifyFarmer(user, reportId) {
+    //TODO:only company or admin
+    const report = await Report.findOne({ _id: reportId });
+    if (!report) {
+      throw new ApiError("No report found");
+    }
+    const farmer = await FarmerCropModel.findOne({ requestId: report.requestId });
+    if (!farmer) {
+      throw new ApiError("No farmer found to related reportId");
+    }
+    const phoneNumber = farmer.phone;
+    const documentUrl = await generatePresignedUrl(report.weatherReport);
+    const filename = report.weatherReport.split("/").pop();
+    await sendWhatsAppMessage({ phoneNumber, documentUrl, filename });
+    return "Weather Report sent..";
+  }
+
+  static async generateReportPDF(reportId) {
+    try {
+      const report = await Report.findById(reportId).populate(
+        "farmerId",
+        "farmerName contactNumber email fieldId"
+      );
+
+      if (!report) {
+        throw new ApiError(404, "Report not found");
+      }
+
+      // Set up document with better configuration
+      const doc = new PDFDocument({
+        size: "A4",
+        margin: 50,
+        bufferPages: true,
+        info: {
+          Title: `Farmer Report - ${report.farmerId.farmerName}`,
+          Author: "Farm Management System",
+          Subject: `Report ID: ${reportId}`,
+          Keywords: "farmer, agriculture, report",
+          CreationDate: new Date(),
+        },
+      });
+
+      const filePath = `./temp/report_${reportId}_${Date.now()}.pdf`;
+      const tempDir = "./temp";
+      await fs.promises.mkdir(tempDir, { recursive: true });
+
+      const stream = fs.createWriteStream(filePath);
+      doc.pipe(stream);
+
+      // Store useful dimensions
+      const pageWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right;
+      const pageHeight = doc.page.height - doc.page.margins.bottom - doc.page.margins.top;
+
+      // Add a styled header with logo placeholder
+      addDocumentHeader(doc, report, pageWidth);
+
+      // Add detailed report info in a styled box
+      addReportDetails(doc, report);
+
+      // Add images section with better layout and pagination
+      if (report.images?.length > 0) {
+        await addImagesSection(doc, report.images, pageHeight, pageWidth);
+      }
+
+      // Add summary content if needed
+      if (report.summary || report.recommendations) {
+        addSummarySection(doc, report);
+      }
+
+      // Add proper footer on each page with pagination
+      addDocumentFooter(doc);
+
+      doc.end();
+
+      return new Promise((resolve, reject) => {
+        stream.on("finish", async () => {
+          // ✅ Ensure file is fully written
+          fs.stat(filePath, (err, stats) => {
+            if (err) {
+              logger.error("Error verifying PDF file");
+              reject(new ApiError(500, "Error verifying PDF file"));
+            } else if (stats.size === 0) {
+              logger.error("Generated PDF is empty");
+              reject(new ApiError(500, "Generated PDF is empty"));
+            } else {
+              resolve(filePath);
+            }
+          });
+        });
+        stream.on("error", reject);
+      });
+    } catch (error) {
+      logger.error("PDF Generation Error:", error);
+      throw new ApiError(500, `Failed to generate PDF: ${error.message}`);
+    }
   }
 }
 

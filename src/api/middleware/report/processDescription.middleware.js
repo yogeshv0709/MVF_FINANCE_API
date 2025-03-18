@@ -4,7 +4,6 @@ const processDescriptions = (req, res, next) => {
 
     // Check if descriptions exist in req.body
     if (req.body.imageDescriptions) {
-      console.log(req.body.imageDescriptions);
       const descArray = Array.isArray(req.body.imageDescriptions)
         ? req.body.imageDescriptions
         : [req.body.imageDescriptions];

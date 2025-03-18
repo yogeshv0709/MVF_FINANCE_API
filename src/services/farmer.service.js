@@ -181,7 +181,6 @@ class FarmerCropService {
 
       return { message: "Farmer and associated data deleted successfully" };
     } catch (error) {
-      console.log(error);
       await session.abortTransaction();
       logger.error(`Error deleting farmer ${requestId}:`, error);
       throw new ApiError(500, "Failed to delete farmer data");
