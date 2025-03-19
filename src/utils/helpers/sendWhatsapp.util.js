@@ -2,11 +2,12 @@ const axios = require("axios");
 const envVars = require("../../config/server.config");
 const ApiError = require("../../errors/ApiErrors");
 const { logger } = require("./logger.utils");
+const constant = require("../constants/constant");
 
-const INTEGRATED_NUMBER = "919039034972"; // Your WhatsApp API number
-const API_URL = "https://api.msg91.com/api/v5/whatsapp/whatsapp-outbound-message/bulk/";
+const INTEGRATED_NUMBER = constant.WHATSAPP_INTEGRATED_NUMBER;
+const API_URL = constant.WHATSAPP_API_URL;
 
-const sendWhatsAppMessage = async ({ phoneNumber, documentUrl, filename }) => {
+const sendWhatsAppMessage = async ({ phoneNumber, documentUrl, filename, name, fieldId }) => {
   try {
     const payload = {
       integrated_number: INTEGRATED_NUMBER,
@@ -20,29 +21,23 @@ const sendWhatsAppMessage = async ({ phoneNumber, documentUrl, filename }) => {
             code: "hi",
             policy: "deterministic",
           },
-          namespace: null, //unique namespace
+          namespace: null,
           to_and_components: [
             {
               to: [phoneNumber],
-              // components: [
-              // {
-              //   type: "header",
-              //   parameters: [
-              //     {
-              //       type: "document",
-              //       document: {
-              //         link: documentUrl,
-              //         filename: filename,
-              //       },
-              //     },
-              //   ],
-              // },
-              // ],
               components: {
                 header_1: {
+                  filename: filename,
                   type: "document",
                   value: documentUrl,
-                  filename: filename,
+                },
+                body_1: {
+                  type: "Farmer Name",
+                  value: name,
+                },
+                body_2: {
+                  type: "Field Id",
+                  value: fieldId,
                 },
               },
             },
@@ -57,10 +52,10 @@ const sendWhatsAppMessage = async ({ phoneNumber, documentUrl, filename }) => {
         authkey: envVars.MSG91_AUTH_KEY,
       },
     });
-
     logger.info("WhatsApp Message Sent:", response.data);
     return response.data;
   } catch (error) {
+    console.log(error);
     logger.error("Error Sending WhatsApp Message:", error.response?.data || error.message);
     throw new ApiError(500, "Failed to send WhatsApp message.");
   }

@@ -1,4 +1,5 @@
 const { z } = require("zod");
+const { objectIdSchema } = require("./objectId.validator");
 
 const reportSchema = z.object({
   imageDescriptions: z.array(
@@ -19,4 +20,10 @@ const reportSchema = z.object({
   requestId: z.string().uuid(),
 });
 
-module.exports = reportSchema;
+const mongoDBreportId = z
+  .object({
+    reportId: objectIdSchema,
+  })
+  .strict();
+
+module.exports = { mongoDBreportId, reportSchema };

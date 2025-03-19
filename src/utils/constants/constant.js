@@ -15,12 +15,15 @@ const userType = {
 };
 
 const isDevelopment = envVars.NODE_ENV === constants.ENVIRONMENT_DEVELOPMENT;
-
 const FRONTEND_URL = envVars.FRONTEND_URL;
+const WHATSAPP_API_URL = "https://api.msg91.com/api/v5/whatsapp/whatsapp-outbound-message/bulk/";
+const WHATSAPP_INTEGRATED_NUMBER = "919039034972";
 
 module.exports = {
   constants,
   isDevelopment,
   FRONTEND_URL,
   userType,
+  WHATSAPP_API_URL,
+  WHATSAPP_INTEGRATED_NUMBER,
 };

@@ -17,9 +17,9 @@ const citySchema = z
   .refine(
     (id) => {
       const num = parseInt(id.substring(2), 10);
-      return num >= 1000 && num <= 1804;
+      return num >= 1000 && num <= DT1791;
     },
-    { message: "District ID must be between DT1000 and DT1804" }
+    { message: "District ID must be between DT1000 and DT1791" }
   );
 
 const baseCompanySchema = {

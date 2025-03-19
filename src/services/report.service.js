@@ -155,7 +155,9 @@ class ReportService {
     const phoneNumber = farmer.phone;
     const documentUrl = await generatePresignedUrl(report.weatherReport);
     const filename = report.weatherReport.split("/").pop();
-    await sendWhatsAppMessage({ phoneNumber, documentUrl, filename });
+    const name = farmer.farmerName;
+    const fieldId = farmer.fieldId;
+    await sendWhatsAppMessage({ phoneNumber, documentUrl, filename, name, fieldId });
     return "Weather Report sent..";
   }
 
