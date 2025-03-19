@@ -16,9 +16,9 @@ const sendWhatsAppMessage = async ({ phoneNumber, documentUrl, filename, name, f
         messaging_product: "whatsapp",
         type: "template",
         template: {
-          name: "krishi_paramarsh1",
+          name: "agri_service_report_week1",
           language: {
-            code: "hi",
+            code: "en",
             policy: "deterministic",
           },
           namespace: null,
@@ -32,11 +32,11 @@ const sendWhatsAppMessage = async ({ phoneNumber, documentUrl, filename, name, f
                   value: documentUrl,
                 },
                 body_1: {
-                  type: "Farmer Name",
+                  type: "text",
                   value: name,
                 },
                 body_2: {
-                  type: "Field Id",
+                  type: "text",
                   value: fieldId,
                 },
               },
