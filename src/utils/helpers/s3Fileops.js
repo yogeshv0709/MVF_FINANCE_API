@@ -18,6 +18,7 @@ const getS3KeyFromUrl = (url) => {
 // Delete a file from S3
 const deleteFileFromS3 = async (fileUrl) => {
   if (!fileUrl) return true;
+  const fileKey = getS3KeyFromUrl(fileUrl);
   const decodedKey = decodeURIComponent(fileKey);
 
   try {
@@ -31,7 +32,6 @@ const deleteFileFromS3 = async (fileUrl) => {
     logger.info(`Successfully deleted file from S3: ${key}`);
     return true;
   } catch (error) {
-    // console.error(");
     logger.error("Error deleting file from S3:", error);
     return false;
   }

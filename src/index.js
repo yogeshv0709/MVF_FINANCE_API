@@ -3,7 +3,7 @@ const connectToMongoDB = require("./config/mongo.config.js");
 const envVars = require("./config/server.config.js");
 const { logger } = require("./utils/helpers/logger.utils.js");
 
-const PORT = envVars.PORT || 3000;
+const PORT = envVars.PORT || 3001;
 
 server.listen(PORT, async () => {
   await connectToMongoDB();

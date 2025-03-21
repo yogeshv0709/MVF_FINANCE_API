@@ -35,14 +35,9 @@ router.post(
 // Get all reports (paginated) @access admin will get all and company will get its perticular farmer @requestid in payload
 router.post("/getPreviousReports", authMiddleware, getAllReports);
 
-router.post("/send-whatsapp", authMiddleware, validate(reportSchema.mongoDBreportId), notifyFarmer);
+router.post("/send-whatsapp", validate(reportSchema.mongoDBreportId), notifyFarmer);
 
-router.post(
-  "/download-pdf",
-  authMiddleware,
-  validate(reportSchema.mongoDBreportId),
-  downloadReport
-);
+router.post("/download-pdf", validate(reportSchema.mongoDBreportId), downloadReport);
 
 // router.post("/editReport", authMiddleware, getAllReports);
 // router.post("/send-whatsapp")

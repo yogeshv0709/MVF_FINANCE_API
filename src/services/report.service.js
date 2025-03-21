@@ -152,7 +152,7 @@ class ReportService {
     if (!farmer) {
       throw new ApiError("No farmer found to related reportId");
     }
-    const phoneNumber = farmer.phone;
+    const phoneNumber = farmer.contact;
     const documentUrl = await generatePresignedUrl(report.weatherReport);
     const filename = report.weatherReport.split("/").pop();
     const name = farmer.farmerName;

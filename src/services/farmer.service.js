@@ -9,6 +9,9 @@ const mongoose = require("mongoose");
 const { logger } = require("../utils/helpers/logger.utils");
 const { deleteFileFromS3 } = require("../utils/helpers/s3Fileops");
 const Report = require("../models/Report.model");
+const generateAndStoreOtp = require("../utils/helpers/generateOTP.util");
+const verifyOtp = require("../utils/helpers/verifyOTP.util");
+const OTPModel = require("../models/OTP.model");
 
 class FarmerCropService {
   // Create a new Farmer Crop entry
@@ -107,6 +110,110 @@ class FarmerCropService {
       throw new ApiError(403, "Access Denied");
     }
 
+    return farmerCrops;
+  }
+
+  static async sendOtp(phoneNumber) {
+    const otp = await generateAndStoreOtp(phoneNumber);
+    console.log(otp);
+    // await sendSMS(phoneNumber, `Your OTP is: ${otp}`);
+  }
+
+  static async verifyOtp(phoneNumber, otp, user) {
+    const response = await verifyOtp(phoneNumber, otp);
+    let farmers;
+    const { userId } = user;
+    if (response.success) {
+      const company = await CompanyModel.findOne({ userId });
+      if (!company) {
+        throw new ApiError(404, "No company found");
+      }
+      farmers = await Farmer.find({ contact: phoneNumber, companyId: company._id }).sort({
+        createdAt: -1,
+      });
+    } else {
+      farmers = [];
+    }
+    return farmers;
+  }
+
+  static async getFarmerDetails(user, data, page = 1, limit = 10) {
+    const userId = user.userId;
+    const userRole = user.type;
+    const { contact } = data;
+    let farmerCrops;
+
+    let totalFarmerCrops;
+    const skip = (page - 1) * limit;
+    if (userRole === userType.Admin) {
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+      // Update status in real-time when fetching farmer data
+      await Farmer.updateMany(
+        { lastReportDate: { $lt: oneWeekAgo }, status: "accept" },
+        { $set: { status: "pending" } }
+      );
+      const filter = contact ? { contact } : {};
+      farmerCrops = await Farmer.find(filter)
+        .sort({ createdAt: -1 })
+        .populate("state")
+        .populate("district")
+        .populate("companyId", "firmName");
+
+      farmerCrops = farmerCrops.map((farmer) => ({
+        ...farmer.toObject(), // Convert Mongoose document to plain object
+        state: farmer.state?.name || null, // Extract state name
+        district: farmer.district?.name || null, // Extract district name
+      }));
+
+      totalFarmerCrops = await Farmer.countDocuments();
+    } else if (userRole === userType.RSVC) {
+      if (data.entype === "bank") {
+        const isVerified = await OTPModel.findOne({
+          phoneNumber: contact,
+          verified: true,
+          expiresAt: { $gt: new Date() },
+        });
+
+        if (!isVerified) {
+          throw new ApiError(400, "Phone number is not verified or OTP expired");
+        }
+        const company = await CompanyModel.findOne({ userId });
+        if (!company) {
+          throw new ApiError("No company found");
+        }
+        const oneWeekAgo = new Date();
+        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+        // Update status in real-time when fetching farmer data
+        await Farmer.updateMany(
+          { lastReportDate: { $lt: oneWeekAgo }, status: "accept" },
+          { $set: { status: "pending" } }
+        );
+        const filter = { companyId: company._id };
+        if (contact) filter.contact = contact;
+        const farmers = await Farmer.find(filter)
+          .sort({ createdAt: -1 })
+          .populate("state")
+          .populate("district")
+          .populate("companyId", "firmName")
+          .lean();
+        farmerCrops = farmers.map((farmer) => ({
+          ...farmer,
+          state: farmer.state.name,
+          district: farmer.district.name,
+        }));
+
+        totalFarmerCrops = await Farmer.countDocuments({
+          companyId: company._id,
+        });
+      } else if (data.entype === "user") {
+        farmerCrops = [];
+      }
+    } else {
+      throw new ApiError(403, "Access Denied");
+    }
     return farmerCrops;
   }
 

@@ -97,4 +97,29 @@ const deleteEnquirySchema = z
   })
   .strict();
 
-module.exports = { FarmerCropSchema, getFarmersCropSchema, deleteEnquirySchema };
+const sendOtpSchema = z
+  .object({
+    phoneNumber: z
+      .string()
+      .length(10, "Contact number must be exactly 10 digits")
+      .regex(/^\d+$/, "Contact number must contain only digits"),
+  })
+  .strict();
+
+const verifyOtpSchema = z
+  .object({
+    phoneNumber: z
+      .string()
+      .length(10, "Contact number must be exactly 10 digits")
+      .regex(/^\d+$/, "Contact number must contain only digits"),
+    otp: z.string().max(10, "Not valid OTP"),
+  })
+  .strict();
+
+module.exports = {
+  FarmerCropSchema,
+  getFarmersCropSchema,
+  deleteEnquirySchema,
+  sendOtpSchema,
+  verifyOtpSchema,
+};
