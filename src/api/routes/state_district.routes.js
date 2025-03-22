@@ -1,5 +1,5 @@
 const express = require("express");
-const { getAllState, getAllDistrict } = require("../controller/state.controller");
+const stateController = require("../controller/state.controller");
 const { z } = require("zod");
 const { stateSchema } = require("../validators/company.validator");
 const validate = require("../middleware/zod.middleware");
@@ -10,7 +10,10 @@ const getAllDistrictSchema = z.object({
   stateId: stateSchema,
 });
 
-router.route("/getAllState").post(getAllState);
-router.route("/getDistrictByStateId").post(validate(getAllDistrictSchema), getAllDistrict);
+router.route("/getAllState").post(stateController.getAllState);
+
+router
+  .route("/getDistrictByStateId")
+  .post(validate(getAllDistrictSchema), stateController.getAllDistrict);
 
 module.exports = router;

@@ -12,7 +12,7 @@ const CompanySchema = new mongoose.Schema(
     stateId: { type: mongoose.Schema.ObjectId, ref: "State", require: true },
     cityId: {
       type: mongoose.Schema.ObjectId,
-      ref: "StateDistrict",
+      ref: "District",
       require: true,
     },
     pinCode: { type: Number },
@@ -29,6 +29,11 @@ const CompanySchema = new mongoose.Schema(
     firmType: { type: String, trim: true },
     tehsil: { type: String, trim: true },
     village: { type: String, trim: true },
+    group: {
+      type: mongoose.Schema.ObjectId,
+      ref: "Group",
+      required: true,
+    },
   },
   { timestamps: true }
 );

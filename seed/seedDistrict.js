@@ -1,4 +1,4 @@
-const StateDistrict = require("../src/models/District.model");
+const DistrictModel = require("../src/models/District.model");
 const mongoose = require("mongoose");
 const fs = require("fs");
 const csvParser = require("csv-parser");
@@ -32,7 +32,7 @@ const insertData = async () => {
     });
 
     // Insert data into MongoDB
-    await StateDistrict.insertMany(data, { ordered: false });
+    await DistrictModel.insertMany(data, { ordered: false });
     console.log("Data inserted successfully");
   } catch (error) {
     console.error("Error in insertData:", error);

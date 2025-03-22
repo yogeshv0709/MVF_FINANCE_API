@@ -16,6 +16,7 @@ const authRoute = require("./api/routes/auth.routes");
 const dashboardRoute = require("./api/routes/dashboard.routes");
 const stateRoute = require("./api/routes/state_district.routes");
 const urlRoute = require("./api/routes/upl.routes");
+const groupRoute = require("./api/routes/group.routes");
 
 const server = express();
 
@@ -28,6 +29,7 @@ server.use(morganMiddleware);
 server.use(express.urlencoded({ extended: true, limit: constants.JSON_LIMIT }));
 
 server.use("/api/v1", authRoute);
+server.use("/api/v1", groupRoute);
 server.use("/api/v1", dashboardRoute);
 server.use("/api/v1", companyRoute);
 server.use("/api/v1", farmerRoute);

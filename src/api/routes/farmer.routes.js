@@ -1,37 +1,50 @@
 const express = require("express");
-const {
-  addFarmerCrop,
-  getFarmerCrops,
-  deleteFarmerCrops,
-  getFarmerDetail,
-  sendOTP,
-  verifyOTP,
-} = require("../controller/farmer.controller");
+const farmerController = require("../controller/farmer.controller");
 const validate = require("../middleware/zod.middleware");
-const {
-  FarmerCropSchema,
-  deleteEnquirySchema,
-  getFarmersCropSchema,
-  sendOtpSchema,
-  verifyOtpSchema,
-} = require("../validators/farmer.validator");
+const validation = require("../validators/farmer.validator");
 const { authMiddleware } = require("../middleware/auth.middleware");
 const isCompany = require("../middleware/isCompany.middleware");
 
 const router = express.Router();
 
 // @access company
-router.post("/addEnquiry", authMiddleware, isCompany, validate(FarmerCropSchema), addFarmerCrop);
+router.post(
+  "/addEnquiry",
+  authMiddleware,
+  isCompany,
+  validate(validation.FarmerCropSchema),
+  farmerController.addFarmerCrop
+);
 
 // @access admin=>all company=> company's farmer {"entype":"user"} {"entype":"bank"}
-router.post("/getEnquiry", authMiddleware, validate(getFarmersCropSchema), getFarmerCrops);
+router.post(
+  "/getEnquiry",
+  authMiddleware,
+  validate(validation.getFarmersCropSchema),
+  farmerController.getFarmerCrops
+);
 
-router.post("/deleteEnquiry", authMiddleware, validate(deleteEnquirySchema), deleteFarmerCrops);
+router.post(
+  "/deleteEnquiry",
+  authMiddleware,
+  validate(validation.deleteEnquirySchema),
+  farmerController.deleteFarmerCrops
+);
 
-router.post("/getFarmerDetail", authMiddleware, getFarmerDetail);
+router.post("/getFarmerDetail", authMiddleware, farmerController.getFarmerDetail);
 
-router.post("/send-otp", authMiddleware, validate(sendOtpSchema), sendOTP);
+router.post(
+  "/send-otp",
+  authMiddleware,
+  validate(validation.sendOtpSchema),
+  farmerController.sendOTP
+);
 
-router.post("/verify-otp", authMiddleware, validate(verifyOtpSchema), verifyOTP);
+router.post(
+  "/verify-otp",
+  authMiddleware,
+  validate(validation.verifyOtpSchema),
+  farmerController.verifyOTP
+);
 
 module.exports = router;

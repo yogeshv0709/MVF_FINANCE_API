@@ -6,9 +6,10 @@ const { userType } = require("../utils/constants/constant");
 const { generateStrongPassword, hashPassword } = require("../utils/helpers/password.util");
 const RoleModel = require("../models/Role.model");
 const StateModel = require("../models/State.model");
-const StateDistrict = require("../models/District.model");
+const DistrictModel = require("../models/District.model");
 const { checkCompanyAccess } = require("../utils/authHelper");
 const { sendPasswordMail } = require("../utils/helpers/email.util");
+const GroupModel = require("../models/Group.model");
 
 class CompanyService {
   static async addCompany(data) {
@@ -16,7 +17,7 @@ class CompanyService {
     session.startTransaction();
 
     try {
-      const { email, stateId, cityId, pincode } = data;
+      const { email, stateId, cityId, pincode, groupId } = data;
 
       // Check if the email already exists
       const existingUser = await UserModel.findOne({ email }).session(session);
@@ -26,6 +27,7 @@ class CompanyService {
 
       // Generate and hash password
       const generatedPassword = await generateStrongPassword();
+      console.log(generatedPassword);
       const hashedPassword = await hashPassword(generatedPassword);
       const roleId = await RoleModel.findOne({ roleId: "R1001" }); //Look at Role Model it's hardcoded
       // Create user
@@ -41,7 +43,7 @@ class CompanyService {
       if (!state) {
         throw new ApiError("Please provide valid stateId");
       }
-      const city = await StateDistrict.findOne({ districtId: cityId });
+      const city = await DistrictModel.findOne({ districtId: cityId });
       if (!city) {
         throw new ApiError("Please provide valid cityId");
       }
@@ -52,6 +54,7 @@ class CompanyService {
         stateId: state._id,
         cityId: city._id,
         pinCode: pincode,
+        group: groupId,
       });
       await company.save({ session });
 
@@ -75,7 +78,8 @@ class CompanyService {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
-      .populate("stateId cityId");
+      .populate("stateId cityId")
+      .populate("group");
 
     return companies;
   }
@@ -83,7 +87,8 @@ class CompanyService {
   static async getCompany(user, frenchiseId) {
     const company = await Company.findOne({ frenchiseId })
       .populate("stateId", "stateId")
-      .populate("cityId", "districtId");
+      .populate("cityId", "districtId")
+      .populate("group");
 
     if (!company) {
       throw new ApiError(404, "Company not found");
@@ -102,7 +107,7 @@ class CompanyService {
   }
 
   static async updateCompany(updates) {
-    const { stateId, cityId, pincode, frenchiseId } = updates;
+    const { stateId, cityId, pincode, frenchiseId, groupId } = updates;
     const company = await Company.findOne({ frenchiseId });
     if (!company) {
       throw new ApiError(404, "Company not found");
@@ -111,22 +116,31 @@ class CompanyService {
     if (!state) {
       throw new ApiError(400, "no state");
     }
-    const city = await StateDistrict.findOne({ districtId: cityId });
+    const city = await DistrictModel.findOne({ districtId: cityId });
     if (!city) {
       throw new ApiError(400, "no city");
     }
+    const group = await GroupModel.findById({ _id: groupId });
+
+    if (!group) {
+      throw new ApiError(404, "No group Found");
+    }
+
     const finalUpdates = {
       ...updates,
       stateId: state._id,
       cityId: city._id,
       pinCode: pincode,
+      group: groupId,
     };
 
     // Update the found company
     const updatedCompany = await Company.findByIdAndUpdate(company._id, finalUpdates, {
       new: true,
       runValidators: true,
-    }).populate("stateId cityId");
+    })
+      .populate("stateId cityId")
+      .populate("group");
 
     return updatedCompany;
   }

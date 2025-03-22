@@ -2,10 +2,12 @@ const ApiError = require("../errors/ApiErrors");
 const CompanyModel = require("../models/Company.model");
 const Company = require("../models/Company.model");
 const Farmer = require("../models/FarmerCrop.model");
+const GroupModel = require("../models/Group.model");
 
 class DashboardService {
   static async getDashboardStats() {
     const companyCount = await Company.countDocuments();
+    const groupCount = await GroupModel.countDocuments();
     const pendingCompanyCount = await Company.countDocuments({
       status: "pending",
     });
@@ -52,6 +54,9 @@ class DashboardService {
       enquiry: {
         month: monthlyFarmers,
         total: farmerCount,
+      },
+      group: {
+        total: groupCount,
       },
       user: {
         total: 0,

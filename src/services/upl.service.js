@@ -1,5 +1,5 @@
 const ApiError = require("../errors/ApiErrors");
-const StateDistrict = require("../models/District.model");
+const DistrictModel = require("../models/District.model");
 const FarmerModel = require("../models/FarmerCrop.model");
 const ReportModel = require("../models/Report.model");
 const StateModel = require("../models/State.model");
@@ -14,7 +14,7 @@ class UplService {
       throw new ApiError("No state found");
     }
 
-    const isDistrict = await StateDistrict.findOne({ districtId: district });
+    const isDistrict = await DistrictModel.findOne({ districtId: district });
     if (!isDistrict) {
       throw new ApiError("No district found");
     }

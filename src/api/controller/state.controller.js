@@ -2,7 +2,7 @@ const { asyncHandler } = require("../../utils/asyncHandler");
 const StateModel = require("../../models/State.model");
 const ApiResponse = require("../../utils/ApiResponse");
 const ApiError = require("../../errors/ApiErrors");
-const StateDistrict = require("../../models/District.model");
+const DistrictModel = require("../../models/District.model");
 const { logger } = require("../../utils/helpers/logger.utils");
 
 const getAllState = asyncHandler(async (req, res) => {
@@ -21,7 +21,7 @@ const getAllDistrict = asyncHandler(async (req, res) => {
   }
 
   logger.info("Fetching districts for state", { stateId });
-  const data = await StateDistrict.find({ stateId });
+  const data = await DistrictModel.find({ stateId });
 
   if (data.length === 0) {
     logger.warn("No districts found for the given stateId", { stateId });

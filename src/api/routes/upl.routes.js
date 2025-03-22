@@ -1,24 +1,46 @@
 const express = require("express");
-const {
-  addEnquiryForUPL,
-  getAdvisoryReport,
-  getAlertReport,
-  getFarmerRequests,
-  getImageReport,
-  getWeatherReports,
-} = require("../controller/upl.controller");
+const uplController = require("../controller/upl.controller");
 const validate = require("../middleware/zod.middleware");
-const { FarmerCropSchema } = require("../validators/farmer.validator");
-const { uplValidator } = require("../validators/upl.valdidator");
+const validation = require("../validators/upl.validator");
 const authUPLkey = require("../middleware/authUPLkey.middleware");
+
 const router = express.Router();
 
-router.post("/addFarmerRequest", authUPLkey, validate(FarmerCropSchema), addEnquiryForUPL);
-router.post("/getFarmerRequest", authUPLkey, getFarmerRequests);
+router.post("/getFarmerRequest", authUPLkey, uplController.getFarmerRequests);
 
-router.post("/getWeatherReport", authUPLkey, validate(uplValidator), getWeatherReports);
-router.post("/getImageReport", authUPLkey, validate(uplValidator), getImageReport);
-router.post("/getAlertReport", authUPLkey, validate(uplValidator), getAlertReport);
-router.post("/getAdvisoryReport", authUPLkey, validate(uplValidator), getAdvisoryReport);
+router.post(
+  "/getImageReport",
+  authUPLkey,
+  validate(validation.uplValidator),
+  uplController.getImageReport
+);
+
+router.post(
+  "/getAlertReport",
+  authUPLkey,
+  validate(validation.uplValidator),
+  uplController.getAlertReport
+);
+
+router.post(
+  "/addFarmerRequest",
+  authUPLkey,
+  validate(validation.FarmerCropSchema),
+  uplController.addEnquiryForUPL
+);
+
+router.post(
+  "/getWeatherReport",
+  authUPLkey,
+  validate(validation.uplValidator),
+  uplController.getWeatherReports
+);
+
+router.post(
+  "/getAdvisoryReport",
+  authUPLkey,
+  validate(validation.uplValidator),
+  uplController.getAdvisoryReport
+);
 
 module.exports = router;

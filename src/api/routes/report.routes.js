@@ -4,13 +4,8 @@ const { authMiddleware } = require("../middleware/auth.middleware");
 const upload = require("../middleware/upload.middleware");
 const s3ErrorHandler = require("../middleware/s3ErrorHandler.middleware");
 const processDescriptions = require("../middleware/report/processDescription.middleware");
-const reportSchema = require("../validators/report.validator");
-const {
-  getAllReports,
-  submitReport,
-  notifyFarmer,
-  downloadReport,
-} = require("../controller/report.controller");
+const validation = require("../validators/report.validator");
+const reportController = require("../controller/report.controller");
 const isAdmin = require("../middleware/isAdmin.middleware");
 const validate = require("../middleware/zod.middleware");
 
@@ -28,16 +23,16 @@ router.post(
   ]),
   s3ErrorHandler,
   processDescriptions,
-  validate(reportSchema.reportSchema),
-  submitReport
+  validate(validation.validation),
+  reportController.submitReport
 );
 
 // Get all reports (paginated) @access admin will get all and company will get its perticular farmer @requestid in payload
-router.post("/getPreviousReports", authMiddleware, getAllReports);
+router.post("/getPreviousReports", authMiddleware, reportController.getAllReports);
 
-router.post("/send-whatsapp", validate(reportSchema.mongoDBreportId), notifyFarmer);
+router.post("/send-whatsapp", validate(validation.mongoDBreportId), reportController.notifyFarmer);
 
-router.post("/download-pdf", validate(reportSchema.mongoDBreportId), downloadReport);
+router.post("/download-pdf", validate(validation.mongoDBreportId), reportController.downloadReport);
 
 // router.post("/editReport", authMiddleware, getAllReports);
 // router.post("/send-whatsapp")

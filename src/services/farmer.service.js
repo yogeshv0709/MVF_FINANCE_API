@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const ApiError = require("../errors/ApiErrors");
 const CompanyModel = require("../models/Company.model");
-const StateDistrict = require("../models/District.model");
+const DistrictModel = require("../models/District.model");
 const Farmer = require("../models/FarmerCrop.model");
 const StateModel = require("../models/State.model");
 const { checkCompanyAccess } = require("../utils/authHelper");
@@ -27,7 +27,7 @@ class FarmerCropService {
     if (!isState) {
       throw new ApiError("No state found");
     }
-    const isDistrict = await StateDistrict.findOne({
+    const isDistrict = await DistrictModel.findOne({
       districtId: district,
     });
     if (!isDistrict) {
@@ -68,9 +68,9 @@ class FarmerCropService {
         .populate("companyId", "firmName");
 
       farmerCrops = farmerCrops.map((farmer) => ({
-        ...farmer.toObject(), // Convert Mongoose document to plain object
-        state: farmer.state?.name || null, // Extract state name
-        district: farmer.district?.name || null, // Extract district name
+        ...farmer.toObject(),
+        state: farmer.state?.name || null,
+        district: farmer.district?.name || null,
       }));
 
       totalFarmerCrops = await Farmer.countDocuments();
@@ -237,9 +237,13 @@ class FarmerCropService {
         throw new ApiError(404, "RequestId not found");
       }
 
-      const company = farmerCrop.companyId;
+      // const company = farmerCrop.companyId;
+      const company = await CompanyModel.findById(farmerCrop.companyId).session(session);
       if (!checkCompanyAccess(user, company)) {
         throw new ApiError(403, "Unauthorized access");
+      }
+      if (!company) {
+        throw new ApiError(404, "No company found with related farmer");
       }
 
       const reports = await Report.find({ farmerId: farmerCrop._id }).session(session);

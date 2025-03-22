@@ -13,7 +13,7 @@ const FarmerCropSchema = new mongoose.Schema(
     state: { type: mongoose.Schema.ObjectId, ref: "State", required: true },
     district: {
       type: mongoose.Schema.ObjectId,
-      ref: "StateDistrict",
+      ref: "District",
       required: true,
     },
     tehsil: { type: String, trim: true },

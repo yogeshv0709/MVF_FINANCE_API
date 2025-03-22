@@ -1,4 +1,5 @@
 const { z } = require("zod");
+const { objectIdSchema } = require("./objectId.validator");
 
 const stateSchema = z
   .string()
@@ -17,7 +18,7 @@ const citySchema = z
   .refine(
     (id) => {
       const num = parseInt(id.substring(2), 10);
-      return num >= 1000 && num <= DT1791;
+      return num >= 1000 && num <= 1791;
     },
     { message: "District ID must be between DT1000 and DT1791" }
   );
@@ -73,10 +74,7 @@ const baseCompanySchema = {
     .length(11, "IFSC code must be exactly 11 characters long")
     .optional(),
 
-  blocked: z
-    .string()
-    .transform((val) => val === "true")
-    .default("false"),
+  blocked: z.boolean().default("false"),
 
   status: z.enum(["pending", "accept", "rejected"]).default("pending"),
 
@@ -105,6 +103,8 @@ const baseCompanySchema = {
     .min(2, "Village name is too short")
     .max(50, "Village name is too long")
     .optional(),
+
+  groupId: objectIdSchema,
 };
 
 const createCompanySchema = z.object(baseCompanySchema);
