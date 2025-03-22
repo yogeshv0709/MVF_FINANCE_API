@@ -143,7 +143,6 @@ class ReportService {
   }
 
   static async notifyFarmer(user, reportId) {
-    //TODO:only company or admin
     const report = await Report.findOne({ _id: reportId });
     if (!report) {
       throw new ApiError("No report found");
@@ -154,7 +153,7 @@ class ReportService {
     }
     const phoneNumber = farmer.contact;
     const documentUrl = await generatePresignedUrl(report.weatherReport);
-    const filename = report.weatherReport.split("/").pop();
+    const filename = report?.weatherReport?.split("/")?.pop() || "";
     const name = farmer.farmerName;
     const fieldId = farmer.fieldId;
     await sendWhatsAppMessage({ phoneNumber, documentUrl, filename, name, fieldId });

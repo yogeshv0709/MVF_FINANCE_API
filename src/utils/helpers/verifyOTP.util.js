@@ -16,9 +16,17 @@ async function verifyOtp(phoneNumber, userOtp) {
     }
 
     // Mark OTP as verified
-    await OTPModel.updateOne({ _id: otpEntry._id }, { verified: true });
-
-    return { success: true, message: "OTP verified successfully" };
+    const response = await OTPModel.findByIdAndUpdate(
+      { _id: otpEntry._id },
+      { verified: true },
+      { new: true }
+    );
+    return {
+      success: true,
+      message: "OTP verified successfully",
+      contact: response.phoneNumber,
+      verified: response.verified,
+    };
   } catch (error) {
     throw new ApiError(500, "serve Error");
   }

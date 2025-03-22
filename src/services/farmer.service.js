@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const ApiError = require("../errors/ApiErrors");
 const CompanyModel = require("../models/Company.model");
 const StateDistrict = require("../models/District.model");
@@ -5,13 +6,13 @@ const Farmer = require("../models/FarmerCrop.model");
 const StateModel = require("../models/State.model");
 const { checkCompanyAccess } = require("../utils/authHelper");
 const { userType } = require("../utils/constants/constant");
-const mongoose = require("mongoose");
 const { logger } = require("../utils/helpers/logger.utils");
 const { deleteFileFromS3 } = require("../utils/helpers/s3Fileops");
 const Report = require("../models/Report.model");
 const generateAndStoreOtp = require("../utils/helpers/generateOTP.util");
 const verifyOtp = require("../utils/helpers/verifyOTP.util");
 const OTPModel = require("../models/OTP.model");
+const { sendWhatsAppOTP } = require("../utils/helpers/sendWhatsapp.util");
 
 class FarmerCropService {
   // Create a new Farmer Crop entry
@@ -116,25 +117,34 @@ class FarmerCropService {
   static async sendOtp(phoneNumber) {
     const otp = await generateAndStoreOtp(phoneNumber);
     console.log(otp);
-    // await sendSMS(phoneNumber, `Your OTP is: ${otp}`);
+    // await sendWhatsAppOTP(phoneNumber, otp);
   }
 
   static async verifyOtp(phoneNumber, otp, user) {
     const response = await verifyOtp(phoneNumber, otp);
-    let farmers;
+    if (!response.success) {
+      throw new ApiError(400, "Invalid or expired OTP");
+    }
+    let farmer;
     const { userId } = user;
     if (response.success) {
       const company = await CompanyModel.findOne({ userId });
       if (!company) {
         throw new ApiError(404, "No company found");
       }
-      farmers = await Farmer.find({ contact: phoneNumber, companyId: company._id }).sort({
-        createdAt: -1,
-      });
+      farmer = await Farmer.findOne({ contact: phoneNumber, companyId: company._id })
+        .sort({
+          createdAt: -1,
+        })
+        .populate("state")
+        .populate("district");
+      if (!farmer) {
+        return response;
+      }
     } else {
-      farmers = [];
+      farmer = {};
     }
-    return farmers;
+    return farmer;
   }
 
   static async getFarmerDetails(user, data, page = 1, limit = 10) {
