@@ -19,8 +19,14 @@ class CompanyService {
     try {
       const { email, stateId, cityId, pincode, groupId } = data;
 
+      //Check if group is blocked
+      const group = await GroupModel.findOne({ _id: groupId }).session(session);
+
+      if (group.blocked) throw new ApiError("Group is blocked");
+
       // Check if the email already exists
       const existingUser = await UserModel.findOne({ email }).session(session);
+
       if (existingUser) {
         throw new ApiError(400, "Email already exists");
       }
@@ -60,7 +66,8 @@ class CompanyService {
 
       await session.commitTransaction();
       // send password
-      await sendPasswordMail(email, generatedPassword);
+      //TODO:change this in production send Mail not in development
+      // await sendPasswordMail(email, generatedPassword);
 
       return company;
     } catch (error) {
@@ -93,6 +100,9 @@ class CompanyService {
     if (!company) {
       throw new ApiError(404, "Company not found");
     }
+    if (company.group.blocked) {
+      throw new ApiError(403, "Company is blocked by Admin");
+    }
     if (!checkCompanyAccess(user, company)) {
       throw new ApiError(403, "Access denied");
     }
@@ -107,42 +117,55 @@ class CompanyService {
   }
 
   static async updateCompany(updates) {
-    const { stateId, cityId, pincode, frenchiseId, groupId } = updates;
-    const company = await Company.findOne({ frenchiseId });
-    if (!company) {
-      throw new ApiError(404, "Company not found");
-    }
-    const state = await StateModel.findOne({ stateId });
-    if (!state) {
-      throw new ApiError(400, "no state");
-    }
-    const city = await DistrictModel.findOne({ districtId: cityId });
-    if (!city) {
-      throw new ApiError(400, "no city");
-    }
-    const group = await GroupModel.findById({ _id: groupId });
+    const session = await mongoose.startSession(); // Start transaction
+    session.startTransaction();
+    try {
+      const { stateId, cityId, pincode, frenchiseId, groupId } = updates;
 
-    if (!group) {
-      throw new ApiError(404, "No group Found");
+      const group = await GroupModel.findOne({ _id: groupId }).session(session);
+
+      if (group.blocked) throw new ApiError("Group is blocked");
+
+      if (!group) throw new ApiError(404, "No group Found");
+
+      const company = await Company.findOne({ frenchiseId }).session(session);
+
+      if (!company) {
+        throw new ApiError(404, "Company not found");
+      }
+      const state = await StateModel.findOne({ stateId });
+      if (!state) {
+        throw new ApiError(400, "No state Found");
+      }
+      const city = await DistrictModel.findOne({ districtId: cityId });
+      if (!city) {
+        throw new ApiError(400, "No city Found");
+      }
+      // const group = await GroupModel.findById({ _id: groupId });
+
+      const finalUpdates = {
+        ...updates,
+        stateId: state._id,
+        cityId: city._id,
+        pinCode: pincode,
+        group: groupId,
+      };
+
+      // Update the found company
+      const updatedCompany = await Company.findByIdAndUpdate(company._id, finalUpdates, {
+        new: true,
+        runValidators: true,
+      })
+        .populate("stateId cityId")
+        .populate("group");
+
+      return updatedCompany;
+    } catch (error) {
+      await session.abortTransaction(); // Rollback in case of an error
+      throw new ApiError(400, error);
+    } finally {
+      session.endSession();
     }
-
-    const finalUpdates = {
-      ...updates,
-      stateId: state._id,
-      cityId: city._id,
-      pinCode: pincode,
-      group: groupId,
-    };
-
-    // Update the found company
-    const updatedCompany = await Company.findByIdAndUpdate(company._id, finalUpdates, {
-      new: true,
-      runValidators: true,
-    })
-      .populate("stateId cityId")
-      .populate("group");
-
-    return updatedCompany;
   }
 }
 

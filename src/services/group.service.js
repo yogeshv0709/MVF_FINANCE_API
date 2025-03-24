@@ -6,6 +6,7 @@ class GroupService {
   async allGroups() {
     return await GroupModel.find();
   }
+
   //fetch by Id
   async fetchById(groupId) {
     return await GroupModel.findById(groupId);

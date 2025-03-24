@@ -65,7 +65,11 @@ class FarmerCropService {
         .sort({ createdAt: -1 })
         .populate("state")
         .populate("district")
-        .populate("companyId", "firmName");
+        .populate({
+          path: "companyId",
+          select: "firmName group",
+          populate: { path: "group", select: "_id groupId name" },
+        });
 
       farmerCrops = farmerCrops.map((farmer) => ({
         ...farmer.toObject(),
@@ -92,7 +96,11 @@ class FarmerCropService {
           .sort({ createdAt: -1 })
           .populate("state")
           .populate("district")
-          .populate("companyId", "firmName")
+          .populate({
+            path: "companyId",
+            select: "firmName group",
+            populate: { path: "group", select: "_id groupId name" },
+          })
           .lean();
 
         farmerCrops = farmers.map((farmer) => ({
@@ -169,7 +177,11 @@ class FarmerCropService {
         .sort({ createdAt: -1 })
         .populate("state")
         .populate("district")
-        .populate("companyId", "firmName");
+        .populate({
+          path: "companyId",
+          select: "firmName group",
+          populate: { path: "group", select: "_id groupId name" },
+        });
 
       farmerCrops = farmerCrops.map((farmer) => ({
         ...farmer.toObject(), // Convert Mongoose document to plain object
@@ -207,7 +219,11 @@ class FarmerCropService {
           .sort({ createdAt: -1 })
           .populate("state")
           .populate("district")
-          .populate("companyId", "firmName")
+          .populate({
+            path: "companyId",
+            select: "firmName group",
+            populate: { path: "group", select: "_id groupId name" },
+          })
           .lean();
         farmerCrops = farmers.map((farmer) => ({
           ...farmer,

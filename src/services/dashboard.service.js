@@ -58,6 +58,7 @@ class DashboardService {
       group: {
         total: groupCount,
       },
+      //TODO=>change user to dynamic
       user: {
         total: 0,
       },
@@ -67,7 +68,9 @@ class DashboardService {
   static async getCompanyDashboardStats(userId, type) {
     if (type === "RSVC") {
       //check this also
-      const company = await CompanyModel.findOne({ userId });
+      const company = await CompanyModel.findOne({ userId }).populate({
+        path: "group",
+      });
       const farmerCount = await Farmer.countDocuments({
         companyId: company._id,
       });

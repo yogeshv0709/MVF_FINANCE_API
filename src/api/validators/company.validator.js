@@ -74,7 +74,7 @@ const baseCompanySchema = {
     .length(11, "IFSC code must be exactly 11 characters long")
     .optional(),
 
-  blocked: z.boolean().default("false"),
+  blocked: z.boolean().default("false").optional(),
 
   status: z.enum(["pending", "accept", "rejected"]).default("pending"),
 

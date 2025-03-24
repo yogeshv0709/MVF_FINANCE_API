@@ -56,6 +56,9 @@ class AuthService {
 
     if (user.type === userType.RSVC) {
       const company = await CompanyModel.findOne({ userId: user._id });
+      if (company.blocked) {
+        throw new ApiError(403, "company is blocked by admin");
+      }
       if (company) {
         const staffId = company.frenchiseId;
         const blocked = company.blocked;
@@ -91,7 +94,7 @@ class AuthService {
     }
     let response;
     if (user.type === userType.RSVC) {
-      response = CompanyModel.findOne({ userId: user.userId });
+      response = CompanyModel.findOne({ userId: user.userId }).populate("group");
     } else if (user.type === userType.Admin) {
       response = {
         _id: user.userId,
