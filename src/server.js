@@ -17,6 +17,7 @@ const dashboardRoute = require("./api/routes/dashboard.routes");
 const stateRoute = require("./api/routes/state_district.routes");
 const urlRoute = require("./api/routes/upl.routes");
 const groupRoute = require("./api/routes/group.routes");
+const serviceRoute = require("./api/routes/services.routes");
 
 const server = express();
 
@@ -36,6 +37,7 @@ server.use("/api/v1", farmerRoute);
 server.use("/api/v1", reportRoute);
 server.use("/api/v1", urlRoute);
 server.use("/api/v1", stateRoute);
+server.use("/api/v1", serviceRoute);
 
 server.use(notFound);
 server.use(errorHandler);

@@ -27,9 +27,9 @@ const getFarmerCrops = asyncHandler(async (req, res) => {
 const sendOTP = asyncHandler(async (req, res) => {
   const { phoneNumber } = req.body;
   logger.info(`Send OTP request to :${phoneNumber}`);
-  await FarmerCropService.sendOtp(phoneNumber);
+  const response = await FarmerCropService.sendOtp(phoneNumber);
   logger.info(`OTP send success to:${phoneNumber}`);
-  res.status(200).json(new ApiResponse(200, {}, "OTP sent successfully"));
+  res.status(200).json(new ApiResponse(200, response, "OTP sent successfully"));
 });
 
 const verifyOTP = asyncHandler(async (req, res) => {
