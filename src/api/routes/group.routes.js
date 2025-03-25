@@ -8,7 +8,7 @@ const groupController = require("../controller/group.controller");
 
 // Create a new group
 router.post(
-  "/add-group",
+  "/addGroup",
   authMiddleware,
   isAdmin,
   validate(validation.createGroupSchema),
@@ -17,17 +17,17 @@ router.post(
 
 // Update a group
 router.post(
-  "/update-group",
+  "/updateGroup",
   authMiddleware,
   isAdmin,
   validate(validation.updateGroupSchema),
   groupController.update
 );
 
-router.post("/all-group", authMiddleware, isAdmin, groupController.fetchAll);
+router.post("/getAllGroup", authMiddleware, isAdmin, groupController.fetchAll);
 
 router.post(
-  "/get-group",
+  "/getGroup",
   authMiddleware,
   isAdmin,
   validate(validation.getGroupSchema),

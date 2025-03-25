@@ -15,6 +15,7 @@ const {
   addDocumentFooter,
 } = require("../utils/helpers/pdf.utils");
 const { logger } = require("../utils/helpers/logger.utils");
+const uploadToS3AndGetUrl = require("../utils/helpers/uplodTos3.util");
 
 class ReportService {
   static async createReport(data, files) {
@@ -36,9 +37,9 @@ class ReportService {
     const getFileUrl = (fieldName) => (files[fieldName] ? files[fieldName][0].location : null);
 
     const weatherReportUrl = getFileUrl("weatherReport");
-    const excelUrl = getFileUrl("excel");
     const advisory1Url = getFileUrl("schedule_advisory1");
     const advisory2Url = getFileUrl("schedule_advisory2");
+    const advisory3Url = getFileUrl("schedule_advisory3");
 
     // Create new report entry
     const report = new Report({
@@ -47,9 +48,9 @@ class ReportService {
       farmerId: farmer._id,
       alert_notifications: description,
       weatherReport: weatherReportUrl,
-      excel: excelUrl,
       schedule_advisory1: advisory1Url,
       schedule_advisory2: advisory2Url,
+      schedule_advisory3: advisory3Url,
     });
 
     await report.save();
@@ -115,8 +116,8 @@ class ReportService {
           reportObj.weatherReport = await generatePresignedUrl(reportObj.weatherReport);
         }
 
-        if (reportObj.excel) {
-          reportObj.excel = await generatePresignedUrl(reportObj.excel);
+        if (reportObj.schedule_advisory3) {
+          reportObj.schedule_advisory3 = await generatePresignedUrl(reportObj.schedule_advisory3);
         }
 
         if (reportObj.schedule_advisory1) {
@@ -143,32 +144,46 @@ class ReportService {
   }
 
   static async notifyFarmer(user, reportId) {
-    const report = await Report.findOne({ _id: reportId });
-    if (!report) {
-      throw new ApiError("No report found");
+    try {
+      const report = await Report.findById(reportId).populate(
+        "farmerId",
+        "farmerName contact email fieldId"
+      );
+
+      if (!report || !report.farmerId) {
+        throw new ApiError(404, "Report or farmer not found");
+      }
+
+      const phoneNumber = report.farmerId.contact;
+      const documentUrl = await generatePresignedUrl(report.weatherReport);
+      const filename = report.weatherReport.split("/").pop() || "";
+      const name = report.farmerId.farmerName;
+      const fieldId = report.farmerId.fieldId;
+      const response = await sendWhatsAppMessage({
+        phoneNumber,
+        documentUrl,
+        filename,
+        name,
+        fieldId,
+      });
+      return response;
+    } catch (error) {
+      logger.error("Error in notifyFarmer:", { reportId, error: error.message });
+      throw error instanceof ApiError
+        ? error
+        : new ApiError(500, "Failed to notify farmer: " + error.message);
     }
-    const farmer = await FarmerCropModel.findOne({ requestId: report.requestId });
-    if (!farmer) {
-      throw new ApiError("No farmer found to related reportId");
-    }
-    const phoneNumber = farmer.contact;
-    const documentUrl = await generatePresignedUrl(report.weatherReport);
-    const filename = report?.weatherReport?.split("/")?.pop() || "";
-    const name = farmer.farmerName;
-    const fieldId = farmer.fieldId;
-    await sendWhatsAppMessage({ phoneNumber, documentUrl, filename, name, fieldId });
-    return "Weather Report sent..";
   }
 
   static async generateReportPDF(reportId) {
     try {
       const report = await Report.findById(reportId).populate(
         "farmerId",
-        "farmerName contactNumber email fieldId"
+        "farmerName contact email fieldId"
       );
 
-      if (!report) {
-        throw new ApiError(404, "Report not found");
+      if (!report || !report.farmerId) {
+        throw new ApiError(404, "Report or farmer not found");
       }
 
       // Set up document with better configuration
@@ -237,6 +252,183 @@ class ReportService {
     } catch (error) {
       logger.error("PDF Generation Error:", error);
       throw new ApiError(500, `Failed to generate PDF: ${error.message}`);
+    }
+  }
+
+  static async notifyFarmerWithPDF(user, reportId) {
+    try {
+      logger.info("Fetching report for reportId:", reportId);
+      const report = await Report.findById(reportId).populate({
+        path: "farmerId",
+        select: "farmerName contact fieldId",
+      });
+
+      if (!report || !report.farmerId) {
+        throw new ApiError(404, "Report or farmer not found");
+      }
+
+      const phoneNumber = report.farmerId.contact;
+      const name = report.farmerId.farmerName;
+      const fieldId = report.farmerId.fieldId;
+      const filename = `report_${reportId}.pdf`;
+
+      let documentUrl;
+      if (!report.pdfUrl) {
+        logger.info("No existing PDF, generating and uploading for reportId:", reportId);
+        const pdfFilePath = await this.generateReportPDF(reportId);
+        const persistentUrl = await uploadToS3AndGetUrl(pdfFilePath, reportId);
+
+        // Store persistent URL in report
+        report.pdfUrl = persistentUrl;
+        await report.save();
+        logger.info(`PDF uploaded and saved to report:${persistentUrl} `);
+
+        // Generate fresh presigned URL
+        documentUrl = await generatePresignedUrl(persistentUrl);
+        logger.info(`Generated presigned URL: ${documentUrl}`);
+
+        // Clean up local file
+        await fs.promises
+          .unlink(pdfFilePath)
+          .catch((err) => logger.warn("Failed to delete temp PDF:", err));
+      } else {
+        logger.info(`Reusing existing PDF for reportId: ${reportId}`);
+        documentUrl = await generatePresignedUrl(report.pdfUrl);
+        logger.info(`Generated presigned URL: ${documentUrl}`);
+      }
+
+      await sendWhatsAppMessage({
+        phoneNumber,
+        documentUrl,
+        filename,
+        name,
+        fieldId,
+      });
+      logger.info(`WhatsApp message sent to: ${phoneNumber}`);
+
+      return { success: true, message: "Farmer report PDF sent successfully" };
+    } catch (error) {
+      logger.error("Error in notifyFarmerWithPDF:", { reportId, error: error.message });
+      throw error instanceof ApiError
+        ? error
+        : new ApiError(500, "Failed to notify farmer with PDF: " + error.message);
+    }
+  }
+
+  static async notifyFarmerWithAllReports(user, reportId) {
+    try {
+      logger.info(`Fetching report for reportId: ${reportId}`);
+      const report = await Report.findById(reportId).populate({
+        path: "farmerId",
+        select: "farmerName contact fieldId",
+      });
+      if (!report || !report.farmerId) {
+        throw new ApiError(404, "Report or farmer not found");
+      }
+
+      const phoneNumber = report.farmerId.contact;
+      const name = report.farmerId.farmerName;
+      const fieldId = report.farmerId.fieldId;
+
+      // Define tasks for each report type
+      const tasks = [];
+
+      // Task 1: Weather Report (if exists)
+      if (report.weatherReport) {
+        tasks.push(
+          (async () => {
+            const documentUrl = await generatePresignedUrl(report.weatherReport, 86400);
+            const filename = report.weatherReport.split("/").pop() || "weather_report.pdf";
+            logger.info(`Sending weather report to ${phoneNumber}`);
+            await sendWhatsAppMessage({ phoneNumber, documentUrl, filename, name, fieldId });
+            return { type: "weatherReport", status: "fulfilled" };
+          })().catch((error) => ({
+            type: "weatherReport",
+            status: "rejected",
+            reason: error.message,
+          }))
+        );
+      }
+
+      // Task 2: PDF Report (generate or reuse)
+      tasks.push(
+        (async () => {
+          let documentUrl;
+          const filename = `report_${reportId}.pdf`;
+          if (!report.pdfUrl) {
+            logger.info(`No existing PDF, generating for reportId: ${reportId}`);
+            const pdfFilePath = await this.generateReportPDF(reportId);
+            const persistentUrl = await uploadToS3AndGetUrl(pdfFilePath, reportId);
+            report.pdfUrl = persistentUrl;
+            await report.save();
+            logger.info(`PDF uploaded and saved: ${persistentUrl}`);
+            documentUrl = await generatePresignedUrl(persistentUrl);
+            await fs.promises
+              .unlink(pdfFilePath)
+              .catch((err) => logger.warn(`Failed to delete temp PDF: ${err.message}`));
+          } else {
+            logger.info(`Reusing existing PDF for reportId: ${reportId}`);
+            documentUrl = await generatePresignedUrl(report.pdfUrl);
+          }
+          logger.info(`Sending PDF report to ${phoneNumber}`);
+          await sendWhatsAppMessage({ phoneNumber, documentUrl, filename, name, fieldId });
+          return { type: "pdfReport", status: "fulfilled" };
+        })().catch((error) => ({
+          type: "pdfReport",
+          status: "rejected",
+          reason: error.message,
+        }))
+      );
+
+      // Task 3: Schedule Advisories (dynamic for 1, 2, 3)
+      ["schedule_advisory1", "schedule_advisory2", "schedule_advisory3"].forEach(
+        (advisoryField) => {
+          if (report[advisoryField]) {
+            tasks.push(
+              (async () => {
+                const documentUrl = await generatePresignedUrl(report[advisoryField]);
+                const filename = report[advisoryField].split("/").pop() || `${advisoryField}.pdf`;
+                logger.info(`Sending ${advisoryField} to ${phoneNumber}`);
+                await sendWhatsAppMessage({ phoneNumber, documentUrl, filename, name, fieldId });
+                return { type: advisoryField, status: "fulfilled" };
+              })().catch((error) => ({
+                type: advisoryField,
+                status: "rejected",
+                reason: error.message,
+              }))
+            );
+          }
+        }
+      );
+
+      // Execute all tasks concurrently
+      const results = await Promise.allSettled(tasks);
+
+      // Process results
+      const fulfilled = results.filter((r) => r.status === "fulfilled").map((r) => r.value);
+      const rejected = results.filter((r) => r.status === "rejected").map((r) => r.reason);
+
+      logger.info(`Notification results for reportId: ${reportId}`, { fulfilled, rejected });
+
+      if (rejected.length > 0) {
+        throw new ApiError(
+          207, // Multi-Status: Some succeeded, some failed
+          `Partially failed to notify farmer: ${rejected.join(", ")}`
+        );
+      }
+
+      return {
+        success: true,
+        message: "All reports sent successfully",
+        sent: fulfilled.map((f) => f.type),
+      };
+    } catch (error) {
+      logger.error(
+        `Error in notifyFarmerWithAllReports for reportId: ${reportId}: ${error.message}`
+      );
+      throw error instanceof ApiError
+        ? error
+        : new ApiError(500, "Failed to notify farmer with reports: " + error.message);
     }
   }
 }

@@ -9,6 +9,10 @@ const API_URL = constant.WHATSAPP_API_URL;
 
 const sendWhatsAppMessage = async ({ phoneNumber, documentUrl, filename, name, fieldId }) => {
   try {
+    if (!phoneNumber || !documentUrl || !filename || !name || !fieldId) {
+      throw new ApiError(400, "Missing required parameters for WhatsApp message");
+    }
+
     const payload = {
       integrated_number: INTEGRATED_NUMBER,
       content_type: "template",
@@ -16,9 +20,9 @@ const sendWhatsAppMessage = async ({ phoneNumber, documentUrl, filename, name, f
         messaging_product: "whatsapp",
         type: "template",
         template: {
-          name: "agri_service_report_week1",
+          name: "weekly_agri_weather_report_hindi",
           language: {
-            code: "en",
+            code: "hi",
             policy: "deterministic",
           },
           namespace: null,
@@ -51,6 +55,7 @@ const sendWhatsAppMessage = async ({ phoneNumber, documentUrl, filename, name, f
         "Content-Type": "application/json",
         authkey: envVars.MSG91_AUTH_KEY,
       },
+      timeout: 10000,
     });
     logger.info("WhatsApp Message Sent:", response.data);
     return response.data;
@@ -70,22 +75,24 @@ const sendWhatsAppOTP = async (phoneNumber, otp) => {
         messaging_product: "whatsapp",
         type: "template",
         template: {
-          name: "authentication_english",
-          language: { code: "en", policy: "deterministic" },
+          name: "authentication_hindi",
+          language: {
+            code: "hi",
+            policy: "deterministic",
+          },
+          namespace: null,
           to_and_components: [
             {
-              to: ["9558345698"],
+              to: [phoneNumber],
               components: {
-                // body_1: { type: "text", value: otp },
                 body_1: {
                   type: "text",
-                  value: "value1",
+                  value: otp,
                 },
                 button_1: {
                   subtype: "url",
                   type: "text",
-                  // value: "<{{url text variable}}>",
-                  value: "<{{url text variable}}>",
+                  value: otp,
                 },
               },
             },
@@ -100,7 +107,6 @@ const sendWhatsAppOTP = async (phoneNumber, otp) => {
         authkey: envVars.MSG91_AUTH_KEY,
       },
     });
-
     logger.info("WhatsApp OTP sent successfully:", response.data);
     return response.data;
   } catch (error) {

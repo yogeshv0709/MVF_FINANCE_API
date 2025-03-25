@@ -36,9 +36,9 @@ const s3Storage = multerS3({
       {
         images: "images",
         weatherReport: "weatherReports",
-        excel: "excelFiles",
         schedule_advisory1: "advisories",
         schedule_advisory2: "advisories",
+        schedule_advisory3: "advisories",
       }[file.fieldname] || "misc";
 
     const safeFileName = encodeURIComponent(file.originalname);

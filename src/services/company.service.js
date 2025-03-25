@@ -100,9 +100,7 @@ class CompanyService {
     if (!company) {
       throw new ApiError(404, "Company not found");
     }
-    if (company.group.blocked) {
-      throw new ApiError(403, "Company is blocked by Admin");
-    }
+
     if (!checkCompanyAccess(user, company)) {
       throw new ApiError(403, "Access denied");
     }

@@ -32,6 +32,7 @@ const generatePresignedUrl = async (s3Url, expiresIn = 3600) => {
     const command = new GetObjectCommand({
       Bucket: envVars.AWS_S3_BUCKET_NAME,
       Key: objectKey,
+      ResponseContentType: "application/octet-stream",
     });
 
     return await getSignedUrl(s3Client, command, { expiresIn });

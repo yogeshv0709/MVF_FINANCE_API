@@ -13,9 +13,9 @@ const reportSchema = z.object({
     })
   ),
   weatherForecastFile: z.string().optional(),
-  excel: z.string().optional(),
   schedule_advisory1: z.string().optional(),
   schedule_advisory2: z.string().optional(),
+  schedule_advisory3: z.string().optional(),
   description: z.string().optional(),
   requestId: z.string().uuid(),
 });

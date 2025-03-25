@@ -17,24 +17,25 @@ router.post(
   upload.fields([
     { name: "images", maxCount: 5 },
     { name: "weatherReport", maxCount: 1 },
-    { name: "excel", maxCount: 1 },
     { name: "schedule_advisory1", maxCount: 1 },
     { name: "schedule_advisory2", maxCount: 1 },
+    { name: "schedule_advisory3", maxCount: 1 },
   ]),
   s3ErrorHandler,
   processDescriptions,
-  validate(validation.validation),
+  validate(validation.reportSchema),
   reportController.submitReport
 );
 
 // Get all reports (paginated) @access admin will get all and company will get its perticular farmer @requestid in payload
 router.post("/getPreviousReports", authMiddleware, reportController.getAllReports);
 
-router.post("/send-whatsapp", validate(validation.mongoDBreportId), reportController.notifyFarmer);
-
 router.post("/download-pdf", validate(validation.mongoDBreportId), reportController.downloadReport);
 
-// router.post("/editReport", authMiddleware, getAllReports);
-// router.post("/send-whatsapp")
+router.post(
+  "/send-whatsapp",
+  validate(validation.mongoDBreportId),
+  reportController.sendReportWhatsapp
+);
 
 module.exports = router;

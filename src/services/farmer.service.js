@@ -123,9 +123,15 @@ class FarmerCropService {
   }
 
   static async sendOtp(phoneNumber) {
-    const otp = await generateAndStoreOtp(phoneNumber);
-    console.log(otp);
-    // await sendWhatsAppOTP(phoneNumber, otp);
+    try {
+      const otp = await generateAndStoreOtp(phoneNumber);
+      console.log(otp);
+      const response = await sendWhatsAppOTP(phoneNumber, otp);
+      return response;
+    } catch (error) {
+      logger.error("Error in sendOtp:", { phoneNumber, error: error.message });
+      throw error;
+    }
   }
 
   static async verifyOtp(phoneNumber, otp, user) {
