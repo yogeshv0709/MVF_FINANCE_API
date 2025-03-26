@@ -28,7 +28,7 @@ async function verifyOtp(phoneNumber, userOtp) {
       verified: response.verified,
     };
   } catch (error) {
-    throw new ApiError(500, "serve Error");
+    throw new ApiError(500, "server Error");
   }
 }
 

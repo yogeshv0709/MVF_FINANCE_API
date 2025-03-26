@@ -44,6 +44,7 @@ const FarmerCropSchema = new mongoose.Schema(
 
     status: { type: String, enum: ["pending", "accept"], default: "pending" },
     lastReportDate: { type: Date, default: null },
+    prevCrop: { type: String },
   },
   { timestamps: true }
 );

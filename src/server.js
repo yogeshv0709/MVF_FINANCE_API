@@ -9,15 +9,7 @@ const { constants } = require("./utils/constants/constant");
 const { morganMiddleware } = require("./utils/helpers/logger.utils");
 
 // @routes
-const companyRoute = require("./api/routes/company.routes");
-const farmerRoute = require("./api/routes/farmer.routes");
-const reportRoute = require("./api/routes/report.routes");
-const authRoute = require("./api/routes/auth.routes");
-const dashboardRoute = require("./api/routes/dashboard.routes");
-const stateRoute = require("./api/routes/state_district.routes");
-const urlRoute = require("./api/routes/upl.routes");
-const groupRoute = require("./api/routes/group.routes");
-const serviceRoute = require("./api/routes/services.routes");
+const Routes = require("./api/routes/index.routes");
 
 const server = express();
 
@@ -29,15 +21,15 @@ server.use(morganMiddleware);
 
 server.use(express.urlencoded({ extended: true, limit: constants.JSON_LIMIT }));
 
-server.use("/api/v1", authRoute);
-server.use("/api/v1", groupRoute);
-server.use("/api/v1", dashboardRoute);
-server.use("/api/v1", companyRoute);
-server.use("/api/v1", farmerRoute);
-server.use("/api/v1", reportRoute);
-server.use("/api/v1", urlRoute);
-server.use("/api/v1", stateRoute);
-server.use("/api/v1", serviceRoute);
+server.use("/api/v1", Routes.authRoute);
+server.use("/api/v1", Routes.groupRoute);
+server.use("/api/v1", Routes.dashboardRoute);
+server.use("/api/v1", Routes.companyRoute);
+server.use("/api/v1", Routes.farmerRoute);
+server.use("/api/v1", Routes.reportRoute);
+server.use("/api/v1", Routes.uplRoute);
+server.use("/api/v1", Routes.stateAndDistrictRoute);
+server.use("/api/v1", Routes.servicesRoute);
 
 server.use(notFound);
 server.use(errorHandler);

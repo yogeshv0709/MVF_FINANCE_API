@@ -27,7 +27,12 @@ router.post(
   "/updateService",
   authMiddleware,
   isAdmin,
-  // validate(validation.updateServiceSchema),
+  upload.fields([
+    { name: "image", maxCount: 1 },
+    { name: "coverImage", maxCount: 1 },
+  ]),
+  s3ErrorHandler,
+  validate(validation.updateServiceSchema),
   serviceController.updateService
 );
 

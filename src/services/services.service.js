@@ -1,6 +1,7 @@
 const ApiError = require("../errors/ApiErrors");
 const Service = require("../models/Services.model");
 const { logger } = require("../utils/helpers/logger.utils");
+const { deleteFileFromS3 } = require("../utils/helpers/s3Fileops");
 
 class Services {
   async addService({ body, files }) {
@@ -29,7 +30,8 @@ class Services {
     logger.info(`New service created: ${savedService.name}`);
     return savedService;
   }
-  async updateService({ body }) {
+
+  async updateService({ body, files }) {
     const { serviceId, ...updateData } = body;
 
     if (!serviceId) {
@@ -53,6 +55,26 @@ class Services {
 
     if (!service) {
       throw new ApiError(404, "Service not found");
+    }
+
+    // Handle image updates
+    try {
+      if (files?.image) {
+        if (service.image) {
+          await deleteFileFromS3(service.image);
+        }
+        service.image = files.image[0].location;
+      }
+
+      if (files?.coverImage) {
+        if (service.coverImage) {
+          await deleteFileFromS3(service.coverImage);
+        }
+        service.coverImage = files.coverImage[0].location;
+      }
+    } catch (error) {
+      logger.error(`Image update failed: ${error.message}`);
+      throw new ApiError(500, "Failed to update images");
     }
 
     // Update each field individually to trigger hooks

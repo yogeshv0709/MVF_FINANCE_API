@@ -47,4 +47,11 @@ router.post(
   farmerController.verifyOTP
 );
 
+router.post(
+  "/updateFarmerDetail",
+  authMiddleware,
+  validate(validation.verifyOtpSchema),
+  farmerController.updateFarmerCrops
+);
+//edit-farmer
 module.exports = router;

@@ -9,7 +9,6 @@ const errorHandler = (err, req, res, next) => {
     errorMessage: err.message,
     stack: isDevelopment ? err.stack : undefined,
   });
-
   if (err instanceof ApiError) {
     return res.status(err.statusCode).json({
       success: false,

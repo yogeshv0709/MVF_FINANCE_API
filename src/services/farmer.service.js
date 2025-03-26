@@ -17,12 +17,18 @@ const { sendWhatsAppOTP } = require("../utils/helpers/sendWhatsapp.util");
 class FarmerCropService {
   // Create a new Farmer Crop entry
   static async addFarmerCrop(user, data) {
-    const { state, district } = data;
+    const { state, district, contact } = data;
     const { userId, type } = user;
     const company = await CompanyModel.findOne({ userId });
     if (!company) {
       throw new ApiError(400, "No company found related Farmer");
     }
+    const verifiedOtp = await OTPModel.findOne({ phoneNumber: contact, verified: true });
+
+    if (!verifiedOtp) {
+      throw new ApiError(403, "Phone number is not verified.");
+    }
+
     const isState = await StateModel.findOne({ stateId: state });
     if (!isState) {
       throw new ApiError("No state found");
@@ -330,6 +336,21 @@ class FarmerCropService {
     } finally {
       session.endSession();
     }
+  }
+
+  static async updateFarmerCrops(user, requestId) {
+    //only that company who have access can update or admin can
+    const result = await FarmerModel.findOneAndUpdate(
+      { _id: user._id, "crops.requestId": requestId },
+      { $set: { "crops.$": updateData } },
+      { new: true, runValidators: true }
+    );
+
+    if (!result) {
+      throw new Error("Farmer or crop request not found.");
+    }
+
+    return result;
   }
 }
 

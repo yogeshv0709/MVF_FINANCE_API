@@ -56,8 +56,17 @@ const getFarmerDetail = asyncHandler(async (req, res) => {
 const deleteFarmerCrops = asyncHandler(async (req, res) => {
   const { requestId } = req.body;
   const user = req.user;
-  logger.info("Fetching farmer crop by ID", { requestId });
+  logger.info("Request for delete farmer crop ", { requestId });
   await FarmerCropService.deleteFarmerCrops(user, requestId);
+  logger.info("Farmer crop deleted successfully");
+  res.status(200).json(new ApiResponse(200, {}, "Farmer Deleted "));
+});
+
+const updateFarmerCrops = asyncHandler(async (req, res) => {
+  const { requestId } = req.body;
+  const user = req.user;
+  logger.info("Fetching farmer crop by ID", { requestId });
+  await FarmerCropService.updateFarmerCrops(user, requestId);
   logger.info("Farmer crop deleted successfully");
   res.status(200).json(new ApiResponse(200, {}, "Farmer Deleted "));
 });
@@ -69,4 +78,5 @@ module.exports = {
   getFarmerDetail,
   sendOTP,
   verifyOTP,
+  updateFarmerCrops,
 };

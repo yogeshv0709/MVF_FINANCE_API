@@ -82,6 +82,7 @@ const FarmerCropSchema = z
     wkt: z.string().min(1, "WKT data is required").max(10000),
     type: z.string().min(1, "Type is required").max(50, "no more than 50").optional(),
     enquiryType: z.string().min(1, "Enquiry Type is required").max(50, "no more than 50"),
+    prevCrop: z.string().max(200, "Prev crop must be less tha 200 character"),
   })
   .strict();
 
