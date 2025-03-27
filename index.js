@@ -1,7 +1,7 @@
-const server = require("./server.js");
-const connectToMongoDB = require("./config/mongo.config.js");
-const envVars = require("./config/server.config.js");
-const { logger } = require("./utils/helpers/logger.utils.js");
+const server = require("./src/server.js");
+const connectToMongoDB = require("./src/config/mongo.config.js");
+const envVars = require("./src/config/server.config.js");
+const { logger } = require("./src/utils/helpers/logger.utils.js");
 
 const PORT = envVars.PORT || 3001;
 
